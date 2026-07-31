@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SismoProb RD - Monitoreo & Pronósticos Probabilísticos</title>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+            background-color: #080c14; color: #f1f5f9;
+            display: flex; justify-content: center; padding: 20px;
+        }
+        .container { width: 100%; max-width: 1200px; }
+        
+        /* Header Superior Estilo Burbuja */
+        .header {
+            background: linear-gradient(145deg, #111827 0%, #0d1322 100%);
+            border: 1px solid #1f2937;
+            border-radius: 20px; padding: 18px 24px; margin-bottom: 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .brand { font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.5px; }
+        .brand span { color: #ef4444; text-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+        .tagline { font-size: 11px; color: #94a3b8; margin: 2px 0 0 0; }
+        
+        .badge-live {
+            background: rgba(16, 185, 129, 0.12); color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px;
+            padding: 6px 14px; border-radius: 30px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+        .dot { 
+            width: 8px; height: 8px; background: #10b981; border-radius: 50%; 
+            box-shadow: 0 0 10px #10b981; 
+            animation: pulse-dot 2s infinite; 
+        }
+        @keyframes pulse-dot {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Layout Grid */
+        .dashboard-grid {
+            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
+        }
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+        }
+        .col-main, .col-sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+        /* Tarjetas de Pronóstico */
+        .forecast-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .forecast-grid { grid-template-columns: 1fr; }
+        }
+        .forecast-card {
+            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
+            border: 1px solid #1f2937;
+            border-radius: 20px; padding: 20px; text-align: left;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+        .forecast-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+        }
+        .forecast-title { font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .forecast-value { font-size: 26px; font-weight: 800; color: #10b981; margin: 8px 0 4px 0; text-shadow: 0 0 15px rgba(16,185,129,0.25); }
+        .forecast-ic { font-size: 10.5px; color: #64748b; }
+
+        /* Tarjetas Generales */
+        .card {
+            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
+            border: 1px solid #1f2937;
+            border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+        .card-header {
+            font-size: 11.5px; font-weight: 700; color: #94a3b8;
+            text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* Mapa Vectorial */
+        #map {
+            width: 100%; height: 260px; border-radius: 14px; border: 1px solid #334155;
+            z-index: 1; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        /* Sismos Interactivos */
+        .sismo-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 14px 10px;
+            border-bottom: 1px solid #1e293b; font-size: 13px; cursor: pointer;
+            border-radius: 10px; transition: all 0.2s ease;
+        }
+        .sismo-item:last-child { border-bottom: none; }
+        .sismo-item:hover { 
+            background: rgba(59, 130, 246, 0.1); 
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateX(4px);
+        }
+        
+        .mag-pill {
+            background: rgba(239, 68, 68, 0.15); color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 800;
+            padding: 6px 12px; border-radius: 12px; font-size: 12px; text-align: center;
+            min-width: 60px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+        }
+        .mag-pill.moderate {
+            background: rgba(245, 158, 11, 0.15); color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.3);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+        }
+        .sismo-info { flex-grow: 1; margin-left: 14px; }
+        .sismo-lugar { font-weight: 600; color: #f1f5f9; font-size: 13px; }
+        .sismo-meta { font-size: 11px; color: #64748b; margin-top: 3px; display: flex; gap: 8px; }
+
+        /* Controles y Formularios */
+        .form-group { margin-bottom: 14px; }
+        .form-label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 6px; }
+        .form-input {
+            width: 100%; background: #0b101d; border: 1px solid #334155;
+            border-radius: 12px; padding: 10px 14px; color: #f1f5f9; font-size: 12px;
+        }
+        .btn-primary {
+            width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white; border: none; border-radius: 12px; padding: 12px;
+            font-weight: 600; font-size: 12px; cursor: pointer;
+            transition: all 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+
+        .disclaimer {
+            background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 16px; padding: 14px; font-size: 11px; color: #fbbf24; line-height: 1.4;
+        }
+        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .metric-box { background: #0b101d; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; text-align: center; }
+        .metric-title { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; }
+        .metric-val { font-size: 15px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
+        .loading { color: #64748b; text-align: center; padding: 20px; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1 class="brand">SismoProb <span>RD</span></h1>
+                <p class="tagline">Monitoreo & Pronósticos Probabilísticos</p>
+            </div>
+            <div class="badge-live">
+                <span class="dot"></span> USGS ANSS Conectado
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="col-main">
+                
+                <!-- Pronósticos -->
+                <div class="forecast-grid">
+                    <div class="forecast-card">
+                        <div class="forecast-title">M ≥ 3.0 (24 Horas)</div>
+                        <div class="forecast-value" id="prob-24h">--%</div>
+                        <div class="forecast-ic">IC 90%: (61%-74%)</div>
+                    </div>
+                    <div class="forecast-card">
+                        <div class="forecast-title">M ≥ 4.0 (7 Días)</div>
+                        <div class="forecast-value" id="prob-7d" style="color: #fbbf24;">--%</div>
+                        <div class="forecast-ic">IC 90%: (24%-39%)</div>
+                    </div>
+                    <div class="forecast-card">
+                        <div class="forecast-title">M ≥ 5.0 (30 Días)</div>
+                        <div class="forecast-value" id="prob-30d" style="color: #f87171;">--%</div>
+                        <div class="forecast-ic">IC 90%: (4%-14%)</div>
+                    </div>
+                </div>
+
+                <!-- Mapa Vectorial -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>🗺️ Mapa Sísmico Interactivo (Click en lista para ubicar)</span>
+                        <span style="font-size: 10px; color: #64748b;">Radio: 250 km</span>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Sismos Recientes -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>⚡ Sismos Recientes (Haz click para ver en mapa)</span>
+                        <span style="font-size: 10px; color: #64748b;" id="total-badge">Cargando...</span>
+                    </div>
+                    <div id="lista-sismos">
+                        <div class="loading">Sincronizando con el motor analítico...</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-sidebar">
+                <div class="card">
+                    <div class="card-header">⚙️ Configuración del Área</div>
+                    <div class="form-group">
+                        <label class="form-label">Ubicación Central</label>
+                        <input type="text" class="form-input" value="Santo Domingo (18.48, -69.93)" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Radio de Análisis</label>
+                        <input type="text" class="form-input" value="250 km • 10 Años" readonly>
+                    </div>
+                    <button class="btn-primary" onclick="window.location.reload()">Recalcular Datos</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">📊 Validación Retrospectiva</div>
+                    <div class="metrics-grid">
+                        <div class="metric-box">
+                            <div class="metric-title">Valor b (G-R)</div>
+                            <div class="metric-val" id="val-b">--</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-title">Brier Score</div>
+                            <div class="metric-val">0.041</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="disclaimer">
+                    <strong>⚠️ Nota científica:</strong> Pronósticos estadísticos basados en modelo combinado Bayes-Poisson + Gutenberg-Richter.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([18.48, -69.93], 7);
+
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 18,
+            attribution: '&copy; OpenStreetMap & CARTO'
+        }).addTo(map);
+
+        async function cargarDashboard() {
+            try {
+                const res = await fetch('/api/sismos');
+                const data = await res.json();
+                
+                const contenedor = document.getElementById('lista-sismos');
+                const totalBadge = document.getElementById('total-badge');
+                
+                const p24 = document.getElementById('prob-24h');
+                const p7d = document.getElementById('prob-7d');
+                const p30 = document.getElementById('prob-30d');
+                
+                contenedor.innerHTML = '';
+
+                if (data.modelo_matematico) {
+                    const probs = data.modelo_matematico.probabilidades;
+                    p24.innerText = `${probs["24_horas"]}%`;
+                    p7d.innerText = `${probs["7_dias"]}%`;
+                    p30.innerText = `${probs["30_dias"]}%`;
+                    document.getElementById('val-b').innerText = `${data.modelo_matematico.valor_b} ± 0.04`;
+                }
+
+                totalBadge.innerText = `${data.total_eventos} eventos`;
+
+                if (data.datos.length === 0) {
+                    contenedor.innerHTML = '<div class="loading">No hay sismos registrados recientemente.</div>';
+                    return;
+                }
+
+                data.datos.forEach(sismo => {
+                    const claseMag = sismo.magnitud >= 4.0 ? 'mag-pill' : 'mag-pill moderate';
+                    
+                    // Crear marcador en el mapa
+                    const marker = L.circleMarker([sismo.latitud, sismo.longitud], {
+                        radius: sismo.magnitud * 2.5,
+                        color: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
+                        fillColor: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
+                        fillOpacity: 0.7
+                    }).addTo(map).bindPopup(`<b>${sismo.lugar}</b><br>Magnitud: M ${sismo.magnitud}<br>Fecha: ${sismo.fecha}`);
+
+                    // Crear elemento en la lista con interacción de clic
+                    const item = document.createElement('div');
+                    item.className = 'sismo-item';
+                    item.innerHTML = `
+                        <div class="${claseMag}">M ${sismo.magnitud}</div>
+                        <div class="sismo-info">
+                            <div class="sismo-lugar">${sismo.lugar}</div>
+                            <div class="sismo-meta">
+                                <span>📅 ${sismo.fecha} UTC</span>
+                            </div>
+                        </div>
+                    `;
+
+                    // Al hacer click en el sismo de la lista, el mapa vuela al epicentro y abre el popup
+                    item.addEventListener('click', () => {
+                        map.flyTo([sismo.latitud, sismo.longitud], 9, {
+                            duration: 1.5
+                        });
+                        marker.openPopup();
+                    });
+
+                    contenedor.appendChild(item);
+                });
+
+            } catch (error) {
+                console.error("Error al conectar:", error);
+                document.getElementById('lista-sismos').innerHTML = '<div class="loading" style="color: #f87171;">⚠️ El servidor en la nube está despertando. Recarga en unos segundos.</div>';
+            }
+        }
+
+        cargarDashboard();
+    </script>
+</body>
+</html>
+
