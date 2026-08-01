@@ -28,10 +28,10 @@ service worker).
   `/api/sismos`).
 - **Deploy**: `Dockerfile` (Python 3.11-slim → `uvicorn app:app --port 8000`) +
   `render.yaml` (blueprint de Render, servicio Docker, `autoDeploy: true` sobre
-  `main`). El deploy real en Render requiere que el dueño de la cuenta conecte
-  el repo desde el dashboard de Render la primera vez (Claude no tiene acceso
-  a esa cuenta) — una vez conectado, cada push a `main` dispara un deploy
-  automático.
+  `main`). Blueprint `sismoprobrd-prod` en Render, conectado y sincronizado
+  con `paranoiadot/sismoprob-rd` en `main`. **Producción: https://sismoprobrd.website**
+  (dominio custom sobre el servicio de Render) — cada push a `main` dispara un
+  deploy automático ahí.
 
 ## Cómo correr en local
 
