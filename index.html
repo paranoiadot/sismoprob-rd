@@ -1,749 +1,1435 @@
 <!DOCTYPE html>
 <html lang="es">
-    
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SismoProb RD - Monitoreo & Estimación Estadística de Probabilidades</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#111827">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SismoProb RD - Monitoreo Sísmico, Clima y Ciclones</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#111827">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="Monitoreo sísmico en tiempo real, clima y seguimiento de ciclones para República Dominicana.">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-            background-color: #080c14; color: #f1f5f9;
-            display: flex; justify-content: center; padding: 20px;
-        }
-        .container { width: 100%; max-width: 1200px; }
-        
-        /* Header Superior Estilo Burbuja */
-        .header {
-            background: linear-gradient(145deg, #111827 0%, #0d1322 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 18px 24px; margin-bottom: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .brand { font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.5px; }
-        .brand span { color: #ef4444; text-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
-        .tagline { font-size: 11px; color: #94a3b8; margin: 2px 0 0 0; }
-        
-        .badge-live {
-            background: rgba(16, 185, 129, 0.12); color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px;
-            padding: 6px 14px; border-radius: 30px; font-weight: 600;
-            display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-        }
-        .dot { 
-            width: 8px; height: 8px; background: #10b981; border-radius: 50%; 
-            box-shadow: 0 0 10px #10b981; 
-            animation: pulse-dot 2s infinite; 
-        }
-        @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    background-color: #080c14; color: #f1f5f9;
+    display: flex; justify-content: center; padding: 20px;
+  }
+  a { color: #60a5fa; }
+  .container { width: 100%; max-width: 1200px; }
 
-        /* Aviso Permanente de Límites del Sistema */
-        .system-warning-banner {
-            background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
-            font-size: 12px; color: #cbd5e1; line-height: 1.5;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .system-warning-banner strong { color: #f87171; }
+  /* Header */
+  .header {
+    background: linear-gradient(145deg, #111827 0%, #0d1322 100%);
+    border: 1px solid #1f2937;
+    border-radius: 20px; padding: 18px 24px; margin-bottom: 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  }
+  .brand { font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.5px; }
+  .brand span { color: #ef4444; text-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
+  .tagline { font-size: 11px; color: #94a3b8; margin: 2px 0 0 0; }
 
-        /* Layout Grid */
-        .dashboard-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
-        }
-        @media (max-width: 900px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
-        .col-main, .col-sidebar { display: flex; flex-direction: column; gap: 20px; }
+  .badge-live {
+    background: rgba(16, 185, 129, 0.12); color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px;
+    padding: 6px 14px; border-radius: 30px; font-weight: 600;
+    display: flex; align-items: center; gap: 8px; cursor: default;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+  }
+  .badge-live.warn { background: rgba(245,158,11,0.12); color:#fbbf24; border-color: rgba(245,158,11,0.3); }
+  .badge-live.err { background: rgba(239,68,68,0.12); color:#f87171; border-color: rgba(239,68,68,0.3); }
+  .dot {
+    width: 8px; height: 8px; background: #10b981; border-radius: 50%;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulse-dot 2s infinite;
+  }
+  .badge-live.warn .dot { background:#fbbf24; box-shadow:0 0 10px #fbbf24; }
+  .badge-live.err .dot { background:#f87171; box-shadow:0 0 10px #f87171; animation:none; }
+  @keyframes pulse-dot {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+    70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
 
-        /* Tarjetas de Pronóstico */
-        .forecast-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-        }
-        @media (max-width: 600px) {
-            .forecast-grid { grid-template-columns: 1fr; }
-        }
-        .forecast-card {
-            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 20px; text-align: left;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-        .forecast-card:hover {
-            border-color: #3b82f6;
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
-        }
-        .forecast-title { font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .forecast-value { font-size: 26px; font-weight: 800; color: #10b981; margin: 8px 0 4px 0; text-shadow: 0 0 15px rgba(16,185,129,0.25); }
-        .forecast-ic { font-size: 10.5px; color: #64748b; }
-        .forecast-desc { font-size: 10px; color: #94a3b8; margin-top: 6px; line-height: 1.3; }
+  /* Tabs */
+  .tabs { display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap; }
+  .tab-btn {
+    background: #111827; border:1px solid #1f2937; color:#94a3b8;
+    padding:10px 18px; border-radius:14px; font-size:13px; font-weight:700;
+    cursor:pointer; transition: all .2s ease; display:flex; align-items:center; gap:8px;
+  }
+  .tab-btn:hover { color:#f1f5f9; border-color:#334155; }
+  .tab-btn.active { background: linear-gradient(135deg,#2563eb,#1d4ed8); color:#fff; border-color:transparent; box-shadow:0 4px 15px rgba(37,99,235,0.35); }
+  @media (max-width: 600px) {
+    .tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .tab-btn { padding: 8px 4px; font-size: 10.5px; gap: 4px; justify-content: center; text-align: center; border-radius: 12px; }
+  }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
 
-        /* Tarjetas Generales */
-        .card {
-            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        }
-        .card-header {
-            font-size: 11.5px; font-weight: 700; color: #94a3b8;
-            text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
+  /* Aviso Permanente */
+  .system-warning-banner {
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
+    font-size: 12.5px; color: #cbd5e1; line-height: 1.55;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .system-warning-banner strong { color: #f87171; }
 
-        /* Mapa Vectorial */
-        #map {
-            width: 100%; height: 260px; border-radius: 14px; border: 1px solid #334155;
-            z-index: 1; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
-        }
+  .info-banner {
+    background: linear-gradient(145deg, rgba(59,130,246,0.08) 0%, rgba(15,23,42,0.9) 100%);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 16px; padding: 16px 18px; margin-bottom: 20px;
+    font-size: 12.5px; color: #cbd5e1; line-height: 1.55;
+  }
+  .info-banner strong { color: #93c5fd; }
 
-        /* Sismos Interactivos */
-        .sismo-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 14px 10px;
-            border-bottom: 1px solid #1e293b; font-size: 13px; cursor: pointer;
-            border-radius: 10px; transition: all 0.2s ease;
-        }
-        .sismo-item:last-child { border-bottom: none; }
-        .sismo-item:hover { 
-            background: rgba(59, 130, 246, 0.1); 
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateX(4px);
-        }
-        
-        .mag-pill {
-            background: rgba(239, 68, 68, 0.15); color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 800;
-            padding: 6px 12px; border-radius: 12px; font-size: 12px; text-align: center;
-            min-width: 60px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
-        }
-        .mag-pill.moderate {
-            background: rgba(245, 158, 11, 0.15); color: #fbbf24;
-            border-color: rgba(245, 158, 11, 0.3);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
-        }
-        .sismo-info { flex-grow: 1; margin-left: 14px; }
-        .sismo-lugar { font-weight: 600; color: #f1f5f9; font-size: 13px; }
-        .sismo-meta { font-size: 11px; color: #64748b; margin-top: 3px; display: flex; gap: 8px; }
+  /* Layout Grid */
+  .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .dashboard-grid { grid-template-columns: 1fr; } }
+  .col-main, .col-sidebar { display: flex; flex-direction: column; gap: 20px; }
 
-        /* Controles y Formularios */
-        .form-group { margin-bottom: 14px; }
-        .form-label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 6px; }
-        .form-input {
-            width: 100%; background: #0b101d; border: 1px solid #334155;
-            border-radius: 12px; padding: 10px 14px; color: #f1f5f9; font-size: 12px;
-        }
-        .btn-primary {
-            width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white; border: none; border-radius: 12px; padding: 12px;
-            font-weight: 600; font-size: 12px; cursor: pointer;
-            transition: all 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+  /* Tarjetas de Pronóstico */
+  .forecast-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .forecast-card {
+    background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
+    border: 1px solid #1f2937;
+    border-radius: 20px; padding: 20px; text-align: left;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+    position: relative; overflow:hidden;
+  }
+  .forecast-card:hover { border-color: #3b82f6; transform: translateY(-4px); box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2); }
+  .forecast-card.is-loading .forecast-value,
+  .forecast-card.is-loading .forecast-ic { opacity: 0.25; filter: blur(1px); }
+  .forecast-loading-tag {
+    display:none; position:absolute; top:14px; right:14px; font-size:9.5px; font-weight:700;
+    color:#fbbf24; background: rgba(245,158,11,0.12); border:1px solid rgba(245,158,11,0.3);
+    padding:3px 8px; border-radius:8px;
+  }
+  .forecast-card.is-loading .forecast-loading-tag { display:inline-block; }
+  .forecast-period { font-size: 12px; font-weight: 700; color:#e2e8f0; }
+  .forecast-title { font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: none; letter-spacing: 0.2px; margin-top:2px; }
+  .forecast-value { font-size: 30px; font-weight: 800; color: #10b981; margin: 10px 0 4px 0; text-shadow: 0 0 15px rgba(16,185,129,0.25); }
+  .forecast-value.level-mid { color:#fbbf24; text-shadow:0 0 15px rgba(251,191,36,0.25); }
+  .forecast-value.level-high { color:#f87171; text-shadow:0 0 15px rgba(248,113,113,0.25); }
+  .forecast-ic { font-size: 10.5px; color: #64748b; }
+  .forecast-desc { font-size: 10.5px; color: #94a3b8; margin-top: 8px; line-height: 1.4; }
+  .forecast-note { font-size: 10px; color:#64748b; margin-top:6px; line-height:1.4; font-style:italic; }
+  @media (max-width: 600px) {
+    .forecast-grid { gap: 8px; }
+    .forecast-card { padding: 12px 8px; border-radius: 14px; }
+    .forecast-loading-tag { top: 6px; right: 6px; font-size: 7.5px; padding: 2px 5px; }
+    .forecast-period { font-size: 9.5px; }
+    .forecast-title { font-size: 8px; line-height: 1.25; }
+    .forecast-value { font-size: 18px; margin: 6px 0 2px 0; }
+    .forecast-ic { font-size: 7.5px; }
+    .forecast-desc { display: none; }
+    .forecast-card details.help summary { font-size: 8px; }
+    .forecast-card details.help p { font-size: 9.5px; }
+  }
 
-        .disclaimer {
-            background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);
-            border-radius: 16px; padding: 14px; font-size: 11px; color: #fbbf24; line-height: 1.4;
-        }
-        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .metric-box { background: #0b101d; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; text-align: center; }
-        .metric-title { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; }
-        .metric-val { font-size: 15px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
-        .loading { color: #64748b; text-align: center; padding: 20px; font-size: 12px; }
-    </style>
+  details.help { margin-top:10px; }
+  details.help summary {
+    font-size:10.5px; font-weight:700; color:#60a5fa; cursor:pointer; list-style:none; outline:none;
+  }
+  details.help summary::-webkit-details-marker { display:none; }
+  details.help summary::before { content:"❓ "; }
+  details.help[open] summary::before { content:"▾ "; }
+  details.help p { font-size:11px; color:#cbd5e1; line-height:1.5; margin:8px 0 0 0; }
+
+  /* Tarjetas Generales */
+  .card {
+    background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
+    border: 1px solid #1f2937;
+    border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  .card-header {
+    font-size: 11.5px; font-weight: 700; color: #94a3b8;
+    text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px;
+    display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:8px;
+  }
+  .sismos-summary { cursor: pointer; list-style: none; user-select: none; }
+  .sismos-summary::-webkit-details-marker { display: none; }
+  .accordion-chevron { color: #64748b; font-size: 12px; transition: transform .2s ease; display: inline-block; }
+  details[open] > .sismos-summary .accordion-chevron { transform: rotate(180deg); }
+  .today-badge {
+    font-size: 10px; font-weight: 700; color: #fbbf24; background: rgba(245,158,11,0.14);
+    border: 1px solid rgba(245,158,11,0.35); padding: 3px 8px; border-radius: 10px;
+  }
+  #sismos-details #lista-sismos { margin-top: 8px; }
+
+  /* Leyenda semáforo */
+  .risk-legend { display:flex; flex-wrap:wrap; gap:16px; font-size:11px; color:#94a3b8; margin:-6px 0 16px 2px; }
+  .risk-legend span { display:inline-flex; align-items:center; gap:6px; }
+  .risk-dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+
+  /* "Qué significa para mí" */
+  .meaning-box {
+    background: rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.25);
+    border-radius:16px; padding:16px 18px; font-size:12.5px; color:#d1fae5; line-height:1.6;
+  }
+  .meaning-box strong { color:#6ee7b7; }
+
+  /* Toggle simple/avanzado */
+  .view-toggle { display:flex; align-items:center; gap:8px; font-size:11px; color:#94a3b8; }
+  .switch { position:relative; width:38px; height:20px; }
+  .switch input { opacity:0; width:0; height:0; }
+  .slider { position:absolute; cursor:pointer; inset:0; background:#334155; border-radius:20px; transition:.2s; }
+  .slider::before { content:""; position:absolute; height:14px; width:14px; left:3px; top:3px; background:white; border-radius:50%; transition:.2s; }
+  input:checked + .slider { background:#2563eb; }
+  input:checked + .slider::before { transform: translateX(18px); }
+
+  .advanced-only { display:none; }
+  body.advanced-mode .advanced-only { display:block; }
+  body.advanced-mode .metrics-grid.advanced-only { display:grid; }
+
+  /* Mapa */
+  #map { width: 100%; height: 320px; border-radius: 14px; border: 1px solid #334155; z-index: 1; box-shadow: inset 0 0 20px rgba(0,0,0,0.6); }
+  .map-legend {
+    background: rgba(11,16,29,0.92); border:1px solid #334155; border-radius:10px; padding:8px 10px;
+    font-size:10.5px; color:#cbd5e1; line-height:1.6; box-shadow:0 4px 10px rgba(0,0,0,0.4);
+  }
+  .map-legend .row { display:flex; align-items:center; gap:6px; }
+  .legend-dot { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .map-summary { font-size:11px; color:#64748b; margin-top:10px; }
+
+  /* Sismos */
+  .sismo-item {
+    display: flex; justify-content: space-between; align-items: center; padding: 14px 10px;
+    border-bottom: 1px solid #1e293b; font-size: 13px; cursor: pointer;
+    border-radius: 10px; transition: all 0.2s ease;
+  }
+  .sismo-item:last-child { border-bottom: none; }
+  .sismo-item:hover { background: rgba(59, 130, 246, 0.1); transform: translateX(4px); }
+
+  .mag-pill {
+    background: rgba(239, 68, 68, 0.15); color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 800;
+    padding: 6px 12px; border-radius: 12px; font-size: 12px; text-align: center;
+    min-width: 60px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
+  }
+  .mag-pill.moderate {
+    background: rgba(245, 158, 11, 0.15); color: #fbbf24;
+    border-color: rgba(245, 158, 11, 0.3); box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
+  }
+  .sismo-info { flex-grow: 1; margin-left: 14px; }
+  .sismo-lugar { font-weight: 600; color: #f1f5f9; font-size: 13px; }
+  .sismo-meta { font-size: 11px; color: #64748b; margin-top: 3px; display: flex; gap: 10px; flex-wrap:wrap; }
+
+  /* Config */
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 6px; }
+  .form-input {
+    width: 100%; background: #0b101d; border: 1px solid #334155;
+    border-radius: 12px; padding: 10px 14px; color: #f1f5f9; font-size: 12px;
+  }
+  select.form-input { appearance:auto; }
+  .btn-primary {
+    width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: white; border: none; border-radius: 12px; padding: 12px;
+    font-weight: 600; font-size: 12px; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+  .btn-secondary {
+    width:100%; background:#0b101d; border:1px solid #334155; color:#e2e8f0; border-radius:12px;
+    padding:10px; font-weight:600; font-size:11.5px; cursor:pointer; margin-top:8px;
+  }
+  .progress-steps { font-size:11px; color:#64748b; margin-top:10px; line-height:1.8; display:none; }
+  .progress-steps.show { display:block; }
+  .progress-steps .step { opacity:0.35; }
+  .progress-steps .step.active { opacity:1; color:#93c5fd; }
+  .progress-steps .step.done { opacity:1; color:#6ee7b7; }
+
+  .disclaimer {
+    background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 16px; padding: 14px; font-size: 11px; color: #fbbf24; line-height: 1.5;
+  }
+  .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .metric-box { background: #0b101d; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; text-align: center; }
+  .metric-title { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; }
+  .metric-val { font-size: 15px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
+  .metric-sub { font-size:9px; color:#64748b; margin-top:2px; }
+  .loading { color: #64748b; text-align: center; padding: 20px; font-size: 12px; }
+  .sources-box { font-size:11px; color:#94a3b8; line-height:1.7; }
+  .sources-box b { color:#e2e8f0; }
+  .update-line { font-size: 10.5px; color:#64748b; }
+
+  /* Clima */
+  .clima-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap:14px; }
+  .clima-card {
+    background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%); border:1px solid #1f2937;
+    border-radius:18px; padding:16px; cursor:pointer; transition: all .2s ease;
+  }
+  .clima-card:hover { border-color:#3b82f6; transform: translateY(-3px); }
+  .clima-card.selected { border-color:#3b82f6; box-shadow:0 0 0 1px #3b82f6 inset; }
+  .clima-city { font-weight:700; font-size:13px; color:#f1f5f9; }
+  .clima-temp { font-size:28px; font-weight:800; color:#f8fafc; margin:6px 0 2px 0; }
+  .clima-desc { font-size:11px; color:#94a3b8; }
+  .clima-rain { font-size:11px; color:#60a5fa; margin-top:6px; }
+  @media (max-width: 600px) {
+    .clima-grid {
+      display: flex; grid-template-columns: none; overflow-x: auto; gap: 10px;
+      scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+      padding-bottom: 6px; scrollbar-width: none;
+    }
+    .clima-grid::-webkit-scrollbar { display: none; }
+    .clima-card { flex: 0 0 40%; scroll-snap-align: start; padding: 12px; }
+    .clima-city { font-size: 11px; }
+    .clima-temp { font-size: 20px; margin: 4px 0 2px 0; }
+    .clima-desc { font-size: 9.5px; }
+    .clima-rain { font-size: 9.5px; margin-top: 4px; }
+  }
+  .clima-detail { margin-top:18px; }
+  .clima-days { display:grid; grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap:10px; margin-top:12px; }
+  .clima-day { background:#0b101d; border:1px solid #1f2937; border-radius:12px; padding:10px; text-align:center; font-size:11px; }
+  .clima-day .d-name { color:#94a3b8; font-weight:700; }
+  .clima-day .d-temp { color:#f1f5f9; margin-top:4px; font-weight:700; }
+  .clima-day .d-rain { color:#60a5fa; margin-top:4px; }
+
+  /* Hero estilo Apple Weather */
+  .weather-hero {
+    border-radius: 24px; padding: 26px 24px 18px 24px; margin-bottom: 20px;
+    background: linear-gradient(165deg, #1e3a8a 0%, #0c1226 75%);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; overflow: hidden;
+    transition: background 0.6s ease;
+  }
+  .weather-hero.is-night { background: linear-gradient(165deg, #211c4f 0%, #0a0c1c 75%); }
+  .weather-hero::before {
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(circle at 85% 0%, rgba(255,255,255,0.10), transparent 55%);
+  }
+  .hero-top { position: relative; text-align: center; }
+  .hero-city { font-size: 15px; font-weight: 700; color: #e2e8f0; letter-spacing: 0.3px; }
+  .hero-temp { font-size: 76px; font-weight: 200; color: #ffffff; line-height: 1; margin: 4px 0; }
+  .hero-desc { font-size: 15px; color: #cbd5e1; font-weight: 600; }
+  .hero-minmax { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .hourly-strip {
+    display: flex; gap: 4px; overflow-x: auto; margin-top: 22px; padding: 4px 2px 2px 2px;
+    scrollbar-width: none; position: relative; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 16px;
+  }
+  .hourly-strip::-webkit-scrollbar { display: none; }
+  .hourly-item {
+    flex: 0 0 56px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-size: 11.5px; color: #cbd5e1;
+  }
+  .hourly-item .h-time { color: #94a3b8; font-size: 10.5px; }
+  .hourly-item .h-icon { font-size: 18px; }
+  .hourly-item .h-temp { font-weight: 700; color: #fff; }
+  .hourly-item .h-rain { font-size: 9.5px; color: #7dd3fc; min-height: 12px; }
+
+  /* Grid de widgets */
+  .widgets-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 720px) { .widgets-grid { grid-template-columns: repeat(3, 1fr); } }
+  .widget-card {
+    background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%); border: 1px solid #1f2937;
+    border-radius: 18px; padding: 14px 16px;
+  }
+  .widget-title {
+    font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;
+    letter-spacing: 0.4px; display: flex; align-items: center; gap: 6px;
+  }
+  .widget-value { font-size: 26px; font-weight: 700; color: #f8fafc; margin: 8px 0 2px 0; }
+  .widget-sub { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+  .widget-bar { width: 100%; height: 5px; border-radius: 6px; background: #1f2937; margin-top: 8px; overflow: hidden; }
+  .widget-bar-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, #60a5fa, #3b82f6); }
+  .wind-compass { display: flex; align-items: center; justify-content: center; margin: 6px 0; }
+  .wind-arrow {
+    width: 34px; height: 34px; border-radius: 50%; border: 1px solid #334155; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wind-arrow span { display: inline-block; transition: transform 0.4s ease; color: #60a5fa; font-size: 16px; }
+  .sun-arc { position: relative; height: 34px; margin: 10px 0 2px 0; }
+  .sun-arc svg { width: 100%; height: 100%; }
+  .sun-times { display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 2px; }
+  .uv-scale { display: flex; gap: 2px; margin-top: 8px; height: 5px; }
+  .uv-scale span { flex: 1; border-radius: 3px; background: #1f2937; }
+  .uv-scale span.on.l1 { background: #10b981; }
+  .uv-scale span.on.l2 { background: #fbbf24; }
+  .uv-scale span.on.l3 { background: #f97316; }
+  .uv-scale span.on.l4 { background: #ef4444; }
+  .uv-scale span.on.l5 { background: #a855f7; }
+
+  /* Ciclones */
+  .ciclon-status { display:flex; align-items:center; gap:10px; margin-bottom:16px; }
+  .ciclon-imgs { display:grid; grid-template-columns: 1fr 1fr; gap:14px; }
+  @media (max-width:700px){ .ciclon-imgs { grid-template-columns: 1fr; } }
+  .ciclon-imgs figure { margin:0; background:#0b101d; border:1px solid #1f2937; border-radius:14px; padding:10px; }
+  .ciclon-imgs img { width:100%; border-radius:8px; display:block; background:#111827; min-height:120px; }
+  .ciclon-imgs figcaption { font-size:10.5px; color:#64748b; margin-top:8px; text-align:center; }
+  .img-fallback { font-size:11px; color:#64748b; text-align:center; padding:30px 10px; }
+
+  .season-badge { font-size:11px; padding:6px 12px; border-radius:20px; font-weight:700; }
+  .season-badge.active { background: rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
+  .season-badge.off { background: rgba(100,116,139,0.15); color:#94a3b8; border:1px solid rgba(100,116,139,0.3); }
+</style>
 </head>
 <body>
 
-    <div class="container">
-        <!-- Encabezado Superior -->
-        <div class="header">
-            <div>
-                <h1 class="brand">SismoProb <span>RD</span></h1>
-                <p class="tagline">Monitoreo sísmico y estimación estadística de probabilidades</p>
-            </div>
-            <div class="badge-live">
-                <span class="dot"></span> USGS ANSS Conectado
-            </div>
-        </div>
+<div class="container">
+  <!-- Encabezado -->
+  <div class="header">
+    <div>
+      <h1 class="brand">SismoProb <span>RD</span></h1>
+      <p class="tagline">Monitoreo sísmico, clima y ciclones · República Dominicana</p>
+    </div>
+    <div class="badge-live" id="status-badge">
+      <span class="dot"></span> <span id="status-text">Conectando…</span>
+    </div>
+  </div>
 
-        <!-- Aviso Permanente de Límites del Sistema -->
-        <div class="system-warning-banner">
-            <strong>⚠️ Aviso importante:</strong> Esta plataforma <strong>no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Los porcentajes estiman la posibilidad estadística de que ocurra <em>al menos un sismo</em> dentro de un radio de 250 km de Santo Domingo. Esto no representa directamente el riesgo de daños ni indica que el sismo vaya a sentirse necesariamente en la ciudad.
-        </div>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="sismos">🌍 Sismos</button>
+    <button class="tab-btn" data-tab="clima">🌦️ Clima y lluvia</button>
+    <button class="tab-btn" data-tab="ciclones">🌀 Ciclones</button>
+  </div>
 
-        <div class="dashboard-grid">
-            <div class="col-main">
-                
-                <!-- Pronósticos -->
-                <div class="forecast-grid">
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 3.0 (24 Horas)</div>
-                        <div class="forecast-value" id="prob-24h">--%</div>
-                        <div class="forecast-ic">IC 90%: (61%-74%)</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 4.0 (7 Días)</div>
-                        <div class="forecast-value" id="prob-7d" style="color: #fbbf24;">--%</div>
-                        <div class="forecast-ic">IC 90%: (24%-39%)</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 5.0 (30 Días)</div>
-                        <div class="forecast-value" id="prob-30d" style="color: #f87171;">--%</div>
-                        <div class="forecast-ic">IC 90%: (4%-14%)</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                </div>
+  <!-- ============ TAB: SISMOS ============ -->
+  <div class="tab-panel active" id="tab-sismos">
 
-                <!-- Mapa Vectorial -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>🗺️ Mapa Sísmico Interactivo (Click en lista para ubicar)</span>
-                        <span style="font-size: 10px; color: #64748b;">Radio: 250 km</span>
-                    </div>
-                    <div id="map"></div>
-                </div>
-
-                <!-- Sismos Recientes -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>⚡ Sismos Recientes (Haz click para ver en mapa)</span>
-                        <span style="font-size: 10px; color: #64748b;" id="total-badge">Cargando...</span>
-                    </div>
-                    <div id="lista-sismos">
-                        <div class="loading">Sincronizando con el motor analítico...</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="col-sidebar">
-                <div class="card">
-                    <div class="card-header">⚙️ Configuración del Área</div>
-                    <div class="form-group">
-                        <label class="form-label">Ubicación Central</label>
-                        <input type="text" class="form-input" value="Santo Domingo (18.48, -69.93)" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Radio de Análisis</label>
-                        <input type="text" class="form-input" value="250 km • 10 Años" readonly>
-                    </div>
-                    <button class="btn-primary" onclick="window.location.reload()">Actualizar Estimación</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">📊 Validación Retrospectiva</div>
-                    <div class="metrics-grid">
-                        <div class="metric-box">
-                            <div class="metric-title">Valor b (G-R)</div>
-                            <div class="metric-val" id="val-b">--</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-title">Brier Score</div>
-                            <div class="metric-val">0.041</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="disclaimer">
-                    <strong>⚠️ Nota científica:</strong> Pronósticos estadísticos basados en modelo combinado Bayes-Poisson + Gutenberg-Richter.
-                </div>
-            </div>
-        </div>
+    <div class="system-warning-banner">
+      <strong>⚠️ Esta plataforma no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Nadie puede hacerlo hoy en día. Los porcentajes de abajo estiman la posibilidad estadística de que se registre <em>al menos un sismo</em> de cierta magnitud, en algún punto dentro de <span id="ctx-radius-banner">250&nbsp;km de Santo Domingo</span>. Esto no equivale al riesgo de daños ni indica que el sismo vaya a sentirse en la ciudad.
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([18.48, -69.93], 7);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 18,
-            attribution: '&copy; OpenStreetMap & CARTO'
-        }).addTo(map);
-
-       async function cargarDashboard() {
-            try {
-                // Mostrar estado de carga limpio en las tarjetas para evitar confusión con datos viejos
-                document.getElementById('prob-24h').innerText = "Calculando...";
-                document.getElementById('ic-24h').innerText = "IC 90%: --";
-                document.getElementById('prob-7d').innerText = "Calculando...";
-                document.getElementById('ic-7d').innerText = "IC 90%: --";
-                document.getElementById('prob-30d').innerText = "Calculando...";
-                document.getElementById('ic-30d').innerText = "IC 90%: --";
-
-                const res = await fetch('/api/sismos');
-                const data = await res.json();
-                
-                const contenedor = document.getElementById('lista-sismos');
-                const totalBadge = document.getElementById('total-badge');
-                
-                const p24 = document.getElementById('prob-24h');
-                const ic24 = document.getElementById('ic-24h');
-                const p7d = document.getElementById('prob-7d');
-                const ic7d = document.getElementById('ic-7d');
-                const p30 = document.getElementById('prob-30d');
-                const ic30 = document.getElementById('ic-30d');
-                
-                contenedor.innerHTML = '';
-
-                if (data.modelo_matematico && data.modelo_matematico.probabilidades) {
-                    const probs = data.modelo_matematico.probabilidades;
-                    
-                    // 24 Horas
-                    p24.innerText = `${probs["24_horas"].probabilidad}%`;
-                    ic24.innerText = `IC 90%: (${probs["24_horas"].ic_90_min}%–${probs["24_horas"].ic_90_max}%)`;
-
-                    // 7 Días
-                    p7d.innerText = `${probs["7_dias"].probabilidad}%`;
-                    ic7d.innerText = `IC 90%: (${probs["7_dias"].ic_90_min}%–${probs["7_dias"].ic_90_max}%)`;
-
-                    // 30 Días
-                    p30.innerText = `${probs["30_dias"].probabilidad}%`;
-                    ic30.innerText = `IC 90%: (${probs["30_dias"].ic_90_min}%–${probs["30_dias"].ic_90_max}%)`;
-
-                    document.getElementById('val-b').innerText = `${data.modelo_matematico.valor_b} ± 0.04`;
-                }
-
-                totalBadge.innerText = `${data.total_eventos} eventos`;
-
-                if (data.datos.length === 0) {
-                    contenedor.innerHTML = '<div class="loading">No hay sismos registrados recientemente.</div>';
-                    return;
-                }
-
-                data.datos.forEach(sismo => {
-                    const claseMag = sismo.magnitud >= 4.0 ? 'mag-pill' : 'mag-pill moderate';
-                    
-                    // Crear marcador en el mapa
-                    const marker = L.circleMarker([sismo.latitud, sismo.longitud], {
-                        radius: sismo.magnitud * 2.5,
-                        color: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
-                        fillColor: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
-                        fillOpacity: 0.7
-                    }).addTo(map).bindPopup(`<b>${sismo.lugar}</b><br>Magnitud: M ${sismo.magnitud}<br>Fecha: ${sismo.fecha}`);
-
-                    // Crear elemento en la lista con interacción de clic
-                    const item = document.createElement('div');
-                    item.className = 'sismo-item';
-                    item.innerHTML = `
-                        <div class="${claseMag}">M ${sismo.magnitud}</div>
-                        <div class="sismo-info">
-                            <div class="sismo-lugar">${sismo.lugar}</div>
-                            <div class="sismo-meta">
-                                <span>📅 ${sismo.fecha} UTC</span>
-                            </div>
-                        </div>
-                    `;
-
-                    // Al hacer click en el sismo de la lista, el mapa vuela al epicentro y abre el popup
-                    item.addEventListener('click', () => {
-                        map.flyTo([sismo.latitud, sismo.longitud], 9, {
-                            duration: 1.5
-                        });
-                        marker.openPopup();
-                    });
-
-                    contenedor.appendChild(item);
-                });
-
-            } catch (error) {
-                console.error("Error al conectar:", error);
-                document.getElementById('lista-sismos').innerHTML = '<div class="loading" style="color: #f87171;">⚠️ El servidor en la nube está despertando. Recarga en unos segundos.</div>';
-            }
-        }
-
-        cargarDashboard();
-    </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SismoProb RD - Monitoreo & Estimación Estadística de Probabilidades</title>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#111827">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-            background-color: #080c14; color: #f1f5f9;
-            display: flex; justify-content: center; padding: 20px;
-        }
-        .container { width: 100%; max-width: 1200px; }
-        
-        /* Header Superior Estilo Burbuja */
-        .header {
-            background: linear-gradient(145deg, #111827 0%, #0d1322 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 18px 24px; margin-bottom: 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        .brand { font-size: 18px; font-weight: 800; color: #ffffff; margin: 0; letter-spacing: -0.5px; }
-        .brand span { color: #ef4444; text-shadow: 0 0 12px rgba(239, 68, 68, 0.6); }
-        .tagline { font-size: 11px; color: #94a3b8; margin: 2px 0 0 0; }
-        
-        .badge-live {
-            background: rgba(16, 185, 129, 0.12); color: #10b981;
-            border: 1px solid rgba(16, 185, 129, 0.3); font-size: 11px;
-            padding: 6px 14px; border-radius: 30px; font-weight: 600;
-            display: flex; align-items: center; gap: 8px;
-            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-        }
-        .dot { 
-            width: 8px; height: 8px; background: #10b981; border-radius: 50%; 
-            box-shadow: 0 0 10px #10b981; 
-            animation: pulse-dot 2s infinite; 
-        }
-        @keyframes pulse-dot {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
-            70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-        }
-
-        /* Aviso Permanente de Límites del Sistema */
-        .system-warning-banner {
-            background: linear-gradient(145deg, rgba(239, 68, 68, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 16px; padding: 14px 18px; margin-bottom: 20px;
-            font-size: 12px; color: #cbd5e1; line-height: 1.5;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        }
-        .system-warning-banner strong { color: #f87171; }
-
-        /* Layout Grid */
-        .dashboard-grid {
-            display: grid; grid-template-columns: 2fr 1fr; gap: 20px;
-        }
-        @media (max-width: 900px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-        }
-        .col-main, .col-sidebar { display: flex; flex-direction: column; gap: 20px; }
-
-        /* Tarjetas de Pronóstico */
-        .forecast-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-        }
-        @media (max-width: 600px) {
-            .forecast-grid { grid-template-columns: 1fr; }
-        }
-        .forecast-card {
-            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 20px; text-align: left;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-        }
-        .forecast-card:hover {
-            border-color: #3b82f6;
-            transform: translateY(-4px);
-            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
-        }
-        .forecast-title { font-size: 10.5px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-        .forecast-value { font-size: 26px; font-weight: 800; color: #10b981; margin: 8px 0 4px 0; text-shadow: 0 0 15px rgba(16,185,129,0.25); }
-        .forecast-ic { font-size: 10.5px; color: #64748b; }
-        .forecast-desc { font-size: 10px; color: #94a3b8; margin-top: 6px; line-height: 1.3; }
-
-        /* Tarjetas Generales */
-        .card {
-            background: linear-gradient(145deg, #131b2e 0%, #0b101d 100%);
-            border: 1px solid #1f2937;
-            border-radius: 20px; padding: 22px; box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-        }
-        .card-header {
-            font-size: 11.5px; font-weight: 700; color: #94a3b8;
-            text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.5px;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        /* Mapa Vectorial */
-        #map {
-            width: 100%; height: 260px; border-radius: 14px; border: 1px solid #334155;
-            z-index: 1; box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
-        }
-
-        /* Sismos Interactivos */
-        .sismo-item {
-            display: flex; justify-content: space-between; align-items: center; padding: 14px 10px;
-            border-bottom: 1px solid #1e293b; font-size: 13px; cursor: pointer;
-            border-radius: 10px; transition: all 0.2s ease;
-        }
-        .sismo-item:last-child { border-bottom: none; }
-        .sismo-item:hover { 
-            background: rgba(59, 130, 246, 0.1); 
-            border-color: rgba(59, 130, 246, 0.3);
-            transform: translateX(4px);
-        }
-        
-        .mag-pill {
-            background: rgba(239, 68, 68, 0.15); color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 800;
-            padding: 6px 12px; border-radius: 12px; font-size: 12px; text-align: center;
-            min-width: 60px; box-shadow: 0 0 12px rgba(239, 68, 68, 0.15);
-        }
-        .mag-pill.moderate {
-            background: rgba(245, 158, 11, 0.15); color: #fbbf24;
-            border-color: rgba(245, 158, 11, 0.3);
-            box-shadow: 0 0 12px rgba(245, 158, 11, 0.15);
-        }
-        .sismo-info { flex-grow: 1; margin-left: 14px; }
-        .sismo-lugar { font-weight: 600; color: #f1f5f9; font-size: 13px; }
-        .sismo-meta { font-size: 11px; color: #64748b; margin-top: 3px; display: flex; gap: 8px; }
-
-        /* Controles y Formularios */
-        .form-group { margin-bottom: 14px; }
-        .form-label { font-size: 11px; font-weight: 600; color: #94a3b8; display: block; margin-bottom: 6px; }
-        .form-input {
-            width: 100%; background: #0b101d; border: 1px solid #334155;
-            border-radius: 12px; padding: 10px 14px; color: #f1f5f9; font-size: 12px;
-        }
-        .btn-primary {
-            width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            color: white; border: none; border-radius: 12px; padding: 12px;
-            font-weight: 600; font-size: 12px; cursor: pointer;
-            transition: all 0.2s; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
-        }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
-
-        .disclaimer {
-            background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2);
-            border-radius: 16px; padding: 14px; font-size: 11px; color: #fbbf24; line-height: 1.4;
-        }
-        .metrics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .metric-box { background: #0b101d; border: 1px solid #1f2937; border-radius: 12px; padding: 12px; text-align: center; }
-        .metric-title { font-size: 9.5px; color: #94a3b8; text-transform: uppercase; }
-        .metric-val { font-size: 15px; font-weight: 700; color: #f8fafc; margin-top: 4px; }
-        .loading { color: #64748b; text-align: center; padding: 20px; font-size: 12px; }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <!-- Encabezado Superior -->
-        <div class="header">
-            <div>
-                <h1 class="brand">SismoProb <span>RD</span></h1>
-                <p class="tagline">Monitoreo sísmico y estimación estadística de probabilidades</p>
-            </div>
-            <div class="badge-live">
-                <span class="dot"></span> USGS ANSS Conectado
-            </div>
-        </div>
-
-        <!-- Aviso Permanente de Límites del Sistema -->
-        <div class="system-warning-banner">
-            <strong>⚠️ Aviso importante:</strong> Esta plataforma <strong>no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Los porcentajes estiman la posibilidad estadística de que ocurra <em>al menos un sismo</em> dentro de un radio de 250 km de Santo Domingo. Esto no representa directamente el riesgo de daños ni indica que el sismo vaya a sentirse necesariamente en la ciudad.
-        </div>
-
-        <div class="dashboard-grid">
-            <div class="col-main">
-                
-                <!-- Pronósticos -->
-                <div class="forecast-grid">
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 3.0 (24 Horas)</div>
-                        <div class="forecast-value" id="prob-24h">--%</div>
-                        <div class="forecast-ic" id="ic-24h">IC 90%: --</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 4.0 (7 Días)</div>
-                        <div class="forecast-value" id="prob-7d" style="color: #fbbf24;">--%</div>
-                        <div class="forecast-ic" id="ic-7d">IC 90%: --</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                    <div class="forecast-card">
-                        <div class="forecast-title">M ≥ 5.0 (30 Días)</div>
-                        <div class="forecast-value" id="prob-30d" style="color: #f87171;">--%</div>
-                        <div class="forecast-ic" id="ic-30d">IC 90%: --</div>
-                        <div class="forecast-desc">Al menos un sismo en 250 km.</div>
-                    </div>
-                </div>
-
-                <!-- Mapa Vectorial -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>🗺️ Mapa Sísmico Interactivo (Click en lista para ubicar)</span>
-                        <span style="font-size: 10px; color: #64748b;">Radio: 250 km</span>
-                    </div>
-                    <div id="map"></div>
-                </div>
-
-                <!-- Sismos Recientes -->
-                <div class="card">
-                    <div class="card-header">
-                        <span>⚡ Sismos Recientes (Haz click para ver en mapa)</span>
-                        <span style="font-size: 10px; color: #64748b;" id="total-badge">Cargando...</span>
-                    </div>
-                    <div id="lista-sismos">
-                        <div class="loading">Sincronizando con el motor analítico...</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="col-sidebar">
-                <div class="card">
-                    <div class="card-header">⚙️ Configuración del Área</div>
-                    <div class="form-group">
-                        <label class="form-label">Ubicación Central</label>
-                        <input type="text" class="form-input" value="Santo Domingo (18.48, -69.93)" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Radio de Análisis</label>
-                        <input type="text" class="form-input" value="250 km • 10 Años" readonly>
-                    </div>
-                    <button class="btn-primary" onclick="window.location.reload()">Actualizar Estimación</button>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">📊 Validación Retrospectiva</div>
-                    <div class="metrics-grid">
-                        <div class="metric-box">
-                            <div class="metric-title">Valor b (G-R)</div>
-                            <div class="metric-val" id="val-b">--</div>
-                        </div>
-                        <div class="metric-box">
-                            <div class="metric-title">Brier Score</div>
-                            <div class="metric-val">0.041</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="disclaimer">
-                    <strong>⚠️ Nota científica:</strong> Pronósticos estadísticos basados en modelo combinado Bayes-Poisson + Gutenberg-Richter.
-                </div>
-            </div>
-        </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+      <span class="update-line" id="update-line">Cargando datos…</span>
+      <div class="view-toggle">
+        Vista sencilla
+        <label class="switch"><input type="checkbox" id="toggle-advanced"><span class="slider"></span></label>
+        Vista avanzada
+      </div>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([18.48, -69.93], 7);
+    <div class="dashboard-grid">
+      <div class="col-main">
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 18,
-            attribution: '&copy; OpenStreetMap & CARTO'
-        }).addTo(map);
+        <!-- Pronósticos -->
+        <div class="forecast-grid">
+          <div class="forecast-card" id="card-24h">
+            <span class="forecast-loading-tag">Actualizando</span>
+            <div class="forecast-period">Próximas 24 horas</div>
+            <div class="forecast-title">Sismo de magnitud 3.0 o mayor</div>
+            <div class="forecast-value" id="prob-24h">--</div>
+            <div class="forecast-ic" id="ic-24h">Rango de incertidumbre: --</div>
+            <div class="forecast-desc"><span class="ctx-radius-full">Dentro de 250 km de Santo Domingo.</span> No significa que se vaya a sentir ni que cause daños.</div>
+            <details class="help"><summary>¿Cómo interpreto este resultado?</summary>
+              <p>El modelo calcula la posibilidad de que ocurra <b>al menos un</b> sismo de esta magnitud o mayor en la región analizada, usando la actividad sísmica histórica. No indica que vaya a sentirse en Santo Domingo ni que vaya a causar daños: eso depende de la profundidad, distancia exacta y tipo de suelo de cada evento.</p>
+            </details>
+          </div>
+          <div class="forecast-card" id="card-7d">
+            <span class="forecast-loading-tag">Actualizando</span>
+            <div class="forecast-period">Próximos 7 días</div>
+            <div class="forecast-title">Sismo de magnitud 4.0 o mayor</div>
+            <div class="forecast-value level-mid" id="prob-7d">--</div>
+            <div class="forecast-ic" id="ic-7d">Rango de incertidumbre: --</div>
+            <div class="forecast-desc"><span class="ctx-radius-full">Dentro de 250 km de Santo Domingo.</span> No significa que se vaya a sentir ni que cause daños.</div>
+            <details class="help"><summary>¿Cómo interpreto este resultado?</summary>
+              <p>Igual que el anterior, pero para sismos de magnitud 4.0 o mayor durante 7 días. Un evento así puede sentirse levemente si ocurre cerca, pero la mayoría no causa daños.</p>
+            </details>
+          </div>
+          <div class="forecast-card" id="card-30d">
+            <span class="forecast-loading-tag">Actualizando</span>
+            <div class="forecast-period">Próximos 30 días</div>
+            <div class="forecast-title">Sismo de magnitud 5.0 o mayor</div>
+            <div class="forecast-value level-high" id="prob-30d">--</div>
+            <div class="forecast-ic" id="ic-30d">Rango de incertidumbre: --</div>
+            <div class="forecast-desc"><span class="ctx-radius-full">Dentro de 250 km de Santo Domingo.</span> No significa que se vaya a sentir ni que cause daños.</div>
+            <details class="help"><summary>¿Cómo interpreto este resultado?</summary>
+              <p>Un sismo de magnitud 5.0 dentro de un área de 250 km puede o no sentirse en Santo Domingo, según qué tan lejos y profundo ocurra. Este número no es una alerta, es una estimación estadística de fondo.</p>
+            </details>
+          </div>
+        </div>
 
-        async function cargarDashboard() {
-            try {
-                // Mostrar estado de carga limpio en las tarjetas para evitar confusión con datos viejos
-                document.getElementById('prob-24h').innerText = "Calculando...";
-                document.getElementById('ic-24h').innerText = "IC 90%: --";
-                document.getElementById('prob-7d').innerText = "Calculando...";
-                document.getElementById('ic-7d').innerText = "IC 90%: --";
-                document.getElementById('prob-30d').innerText = "Calculando...";
-                document.getElementById('ic-30d').innerText = "IC 90%: --";
+        <div class="risk-legend">
+          <span><i class="risk-dot" style="background:#10b981"></i> Baja (&lt;15%)</span>
+          <span><i class="risk-dot" style="background:#fbbf24"></i> Moderada (15–50%)</span>
+          <span><i class="risk-dot" style="background:#f87171"></i> Elevada (≥50%)</span>
+        </div>
 
-                const res = await fetch('/api/sismos');
-                const data = await res.json();
-                
-                const contenedor = document.getElementById('lista-sismos');
-                const totalBadge = document.getElementById('total-badge');
-                
-                const p24 = document.getElementById('prob-24h');
-                const ic24 = document.getElementById('ic-24h');
-                const p7d = document.getElementById('prob-7d');
-                const ic7d = document.getElementById('ic-7d');
-                const p30 = document.getElementById('prob-30d');
-                const ic30 = document.getElementById('ic-30d');
-                
-                contenedor.innerHTML = '';
+        <div class="meaning-box">
+          <strong>¿Qué significa esto para mí?</strong> Estos porcentajes describen actividad sísmica de fondo en una zona amplia (<span id="ctx-radius-meaning">250 km alrededor de Santo Domingo</span>), no el riesgo de daños en tu vivienda. Mantén las medidas normales de preparación ante sismos y, si sientes un temblor, sigue las indicaciones de la Defensa Civil y el COE — esta plataforma es informativa y no sustituye los comunicados oficiales.
+        </div>
 
-                if (data.modelo_matematico && data.modelo_matematico.probabilidades) {
-                    const probs = data.modelo_matematico.probabilidades;
-                    
-                    // 24 Horas
-                    p24.innerText = `${probs["24_horas"].probabilidad}%`;
-                    ic24.innerText = `IC 90%: (${probs["24_horas"].ic_90_min}%–${probs["24_horas"].ic_90_max}%)`;
+        <!-- Mapa -->
+        <div class="card">
+          <div class="card-header">
+            <span>🗺️ Mapa sísmico interactivo</span>
+            <span style="font-size: 10px; color: #64748b;" id="radio-label">Radio analizado: 250 km desde Santo Domingo</span>
+          </div>
+          <div id="map"></div>
+          <div class="map-summary" id="map-summary">Cargando eventos…</div>
+        </div>
 
-                    // 7 Días
-                    p7d.innerText = `${probs["7_dias"].probabilidad}%`;
-                    ic7d.innerText = `IC 90%: (${probs["7_dias"].ic_90_min}%–${probs["7_dias"].ic_90_max}%)`;
+        <!-- Sismos Recientes -->
+        <div class="card">
+          <details id="sismos-details">
+            <summary class="card-header sismos-summary">
+              <span>⚡ Sismos recientes — Fuente: USGS/ANSS</span>
+              <span style="display:flex; align-items:center; gap:8px;">
+                <span class="today-badge" id="today-badge" style="display:none;"></span>
+                <span style="font-size: 10px; color: #64748b;" id="total-badge">Cargando...</span>
+                <span class="accordion-chevron">▾</span>
+              </span>
+            </summary>
+            <div id="lista-sismos">
+              <div class="loading">Sincronizando con el catálogo sísmico…</div>
+            </div>
+          </details>
+        </div>
 
-                    // 30 Días
-                    p30.innerText = `${probs["30_dias"].probabilidad}%`;
-                    ic30.innerText = `IC 90%: (${probs["30_dias"].ic_90_min}%–${probs["30_dias"].ic_90_max}%)`;
+      </div>
 
-                    document.getElementById('val-b').innerText = `${data.modelo_matematico.valor_b} ± 0.04`;
-                }
+      <div class="col-sidebar">
+        <div class="card">
+          <div class="card-header">⚙️ Área analizada</div>
+          <div class="form-group">
+            <label class="form-label">Centro del análisis</label>
+            <select class="form-input" id="sel-centro"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Área analizada</label>
+            <select class="form-input" id="sel-radio">
+              <option value="100">100 km a la redonda</option>
+              <option value="250" selected>250 km a la redonda</option>
+              <option value="500">500 km a la redonda</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Datos históricos usados</label>
+            <select class="form-input" id="sel-anios">
+              <option value="1">Último año</option>
+              <option value="5">Últimos 5 años</option>
+              <option value="10" selected>Últimos 10 años</option>
+              <option value="20">Últimos 20 años</option>
+            </select>
+          </div>
+          <div class="form-group advanced-only">
+            <label class="form-label">Coordenadas del centro</label>
+            <input type="text" class="form-input" id="txt-coords" value="18.4861, -69.9312" readonly>
+          </div>
+          <div class="form-group advanced-only">
+            <label class="form-label">Magnitud de completitud (Mc)</label>
+            <input type="text" class="form-input" value="3.0 Mw (seleccionada automáticamente)" readonly>
+          </div>
+          <button class="btn-primary" id="btn-recalcular">Actualizar estimación</button>
+          <div class="progress-steps" id="progress-steps">
+            <div class="step" data-step="1">① Consultando catálogo sísmico (USGS/ANSS)…</div>
+            <div class="step" data-step="2">② Comprobando calidad de los datos…</div>
+            <div class="step" data-step="3">③ Calculando probabilidades…</div>
+            <div class="step" data-step="4">④ Actualización completada.</div>
+          </div>
+          <button class="btn-secondary" id="btn-notify">🔔 Avisarme de sismos M≥4.0 (mientras la app esté abierta)</button>
+        </div>
 
-                totalBadge.innerText = `${data.total_eventos} eventos`;
+        <div class="card advanced-only">
+          <div class="card-header">📊 Validación retrospectiva (experimental)</div>
+          <div class="metrics-grid">
+            <div class="metric-box">
+              <div class="metric-title">Valor b (Gutenberg–Richter)</div>
+              <div class="metric-val" id="val-b">--</div>
+              <div class="metric-sub">Relación entre sismos pequeños y grandes en el catálogo. No es una alerta.</div>
+            </div>
+            <div class="metric-box">
+              <div class="metric-title">Brier Score (24h, M≥3.0)</div>
+              <div class="metric-val" id="val-brier">--</div>
+              <div class="metric-sub" id="val-brier-sub">Comparado con modelo base</div>
+            </div>
+          </div>
+          <p style="font-size:11px; color:#94a3b8; line-height:1.5; margin-top:12px;">
+            Evaluación simplificada del desempeño del modelo en meses pasados, comparada con un modelo de referencia de tasa constante. Un Brier Score más bajo indica pronósticos más cercanos a lo ocurrido. Nivel de calibración: <b>experimental</b>, en mejora continua.
+          </p>
+        </div>
 
-                if (data.datos.length === 0) {
-                    contenedor.innerHTML = '<div class="loading">No hay sismos registrados recientemente.</div>';
-                    return;
-                }
+        <div class="card">
+          <div class="card-header">📚 Fuentes y responsabilidad</div>
+          <div class="sources-box">
+            <p><b>Datos sísmicos:</b> USGS/ANSS ComCat. No implica respaldo ni validación del USGS al modelo probabilístico.</p>
+            <p><b>Modelo probabilístico:</b> desarrollado por SismoProb RD (Bayes–Poisson + Gutenberg–Richter).</p>
+            <p><b>Fuente nacional recomendada para contraste:</b> <a href="https://sismologico.uasd.edu.do/" target="_blank" rel="noopener">Centro Nacional de Sismología, UASD</a>.</p>
+            <p><b>Uso:</b> informativo y educativo. No reemplaza los comunicados de la Defensa Civil ni del COE.</p>
+          </div>
+          <details class="help" style="margin-top:12px;">
+            <summary>Conoce el método</summary>
+            <p><b>Bayes:</b> actualiza el cálculo cada vez que llegan datos nuevos.<br>
+            <b>Poisson:</b> convierte una frecuencia esperada de sismos en una probabilidad de ocurrencia.<br>
+            <b>Gutenberg–Richter:</b> describe que ocurren muchos sismos pequeños y progresivamente menos grandes.<br>
+            Estas leyes describen patrones estadísticos observados; no permiten predecir un evento específico.</p>
+          </details>
+        </div>
 
-                data.datos.forEach(sismo => {
-                    const claseMag = sismo.magnitud >= 4.0 ? 'mag-pill' : 'mag-pill moderate';
-                    
-                    // Crear marcador en el mapa
-                    const marker = L.circleMarker([sismo.latitud, sismo.longitud], {
-                        radius: sismo.magnitud * 2.5,
-                        color: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
-                        fillColor: sismo.magnitud >= 4.0 ? '#ef4444' : '#fbbf24',
-                        fillOpacity: 0.7
-                    }).addTo(map).bindPopup(`<b>${sismo.lugar}</b><br>Magnitud: M ${sismo.magnitud}<br>Fecha: ${sismo.fecha}`);
+        <div class="disclaimer">
+          <strong>⚠️ Nota:</strong> herramienta informativa y educativa. No determina el día, la hora ni el lugar exacto de un futuro terremoto. Los resultados pueden cambiar al incorporar nuevos datos.
+        </div>
+      </div>
+    </div>
+  </div>
 
-                    // Crear elemento en la lista con interacción de clic
-                    const item = document.createElement('div');
-                    item.className = 'sismo-item';
-                    item.innerHTML = `
-                        <div class="${claseMag}">M ${sismo.magnitud}</div>
-                        <div class="sismo-info">
-                            <div class="sismo-lugar">${sismo.lugar}</div>
-                            <div class="sismo-meta">
-                                <span>📅 ${sismo.fecha} UTC</span>
-                            </div>
-                        </div>
-                    `;
+  <!-- ============ TAB: CLIMA ============ -->
+  <div class="tab-panel" id="tab-clima">
+    <div class="info-banner">
+      <strong>Clima y lluvia en tiempo real.</strong> Datos de Open-Meteo (modelos GFS/ECMWF y otros). Toca una ciudad para ver el pronóstico de los próximos días. Esta sección se actualiza automáticamente cada 10 minutos.
+    </div>
 
-                    // Al hacer click en el sismo de la lista, el mapa vuela al epicentro y abre el popup
-                    item.addEventListener('click', () => {
-                        map.flyTo([sismo.latitud, sismo.longitud], 9, {
-                            duration: 1.5
-                        });
-                        marker.openPopup();
-                    });
+    <div class="weather-hero" id="weather-hero">
+      <div class="hero-top">
+        <div class="hero-city" id="hero-city">Cargando…</div>
+        <div class="hero-temp" id="hero-temp">--°</div>
+        <div class="hero-desc" id="hero-desc">&nbsp;</div>
+        <div class="hero-minmax" id="hero-minmax">&nbsp;</div>
+      </div>
+      <div class="hourly-strip" id="hourly-strip"></div>
+    </div>
 
-                    contenedor.appendChild(item);
-                });
+    <div class="widgets-grid" id="widgets-grid">
+      <div class="widget-card">
+        <div class="widget-title">🌡️ Sensación térmica</div>
+        <div class="widget-value" id="w-feels">--°</div>
+        <div class="widget-sub" id="w-feels-sub">&nbsp;</div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title">💧 Humedad</div>
+        <div class="widget-value" id="w-humidity">--%</div>
+        <div class="widget-bar"><div class="widget-bar-fill" id="w-humidity-bar" style="width:0%"></div></div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title">🧭 Viento</div>
+        <div class="wind-compass"><div class="wind-arrow"><span id="w-wind-arrow">↑</span></div></div>
+        <div class="widget-sub" id="w-wind" style="text-align:center;">-- km/h</div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title">🌧️ Precipitación</div>
+        <div class="widget-value" id="w-rain-prob">--%</div>
+        <div class="widget-sub" id="w-rain-sub">probabilidad hoy</div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title">☀️ Amanecer / Atardecer</div>
+        <div class="sun-arc"><svg viewBox="0 0 100 34" preserveAspectRatio="none"><path d="M2,30 Q50,-6 98,30" fill="none" stroke="#334155" stroke-width="1.5"/><circle id="w-sun-dot" cx="2" cy="30" r="3.5" fill="#fbbf24"/></svg></div>
+        <div class="sun-times"><span id="w-sunrise">--:--</span><span id="w-sunset">--:--</span></div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title">🔆 Índice UV</div>
+        <div class="widget-value" id="w-uv">--</div>
+        <div class="widget-sub" id="w-uv-sub">&nbsp;</div>
+        <div class="uv-scale" id="w-uv-scale"><span class="l1"></span><span class="l1"></span><span class="l2"></span><span class="l2"></span><span class="l3"></span><span class="l3"></span><span class="l4"></span><span class="l4"></span><span class="l5"></span><span class="l5"></span></div>
+      </div>
+    </div>
 
-            } catch (error) {
-                console.error("Error al conectar:", error);
-                document.getElementById('lista-sismos').innerHTML = '<div class="loading" style="color: #f87171;">⚠️ El servidor en la nube está despertando. Recarga en unos segundos.</div>';
-            }
+    <div class="card">
+      <div class="card-header">
+        <span>🌦️ Ciudades principales</span>
+        <span class="update-line" id="clima-update">Cargando…</span>
+      </div>
+      <div class="clima-grid" id="clima-grid">
+        <div class="loading">Consultando estaciones…</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+      <div class="card-header"><span id="clima-detail-title">Pronóstico — 7 días</span></div>
+      <div class="clima-days" id="clima-days"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: CICLONES ============ -->
+  <div class="tab-panel" id="tab-ciclones">
+    <div class="info-banner">
+      <strong>Seguimiento de ciclones tropicales.</strong> La temporada oficial de huracanes en el Atlántico va del 1 de junio al 30 de noviembre. Estos gráficos son publicados directamente por el Centro Nacional de Huracanes (NHC/NOAA) de EE. UU., la autoridad oficial para el Atlántico.
+    </div>
+    <div class="card">
+      <div class="card-header"><span>🌀 Estado actual</span></div>
+      <div class="ciclon-status">
+        <span class="season-badge" id="season-badge">Comprobando temporada…</span>
+        <span class="update-line" id="ciclon-update"></span>
+      </div>
+      <div class="ciclon-imgs">
+        <figure>
+          <img id="img-2d" alt="Pronóstico tropical de 2 días para el Atlántico (NHC)" onerror="this.parentElement.innerHTML='&lt;div class=&quot;img-fallback&quot;&gt;No se pudo cargar el gráfico de 2 días. &lt;a href=&quot;https://www.nhc.noaa.gov/&quot; target=&quot;_blank&quot;&gt;Verlo directo en NHC.gov →&lt;/a&gt;&lt;/div&gt;'">
+          <figcaption>Pronóstico de formación tropical — próximos 2 días (NHC)</figcaption>
+        </figure>
+        <figure>
+          <img id="img-7d" alt="Pronóstico tropical de 7 días para el Atlántico (NHC)" onerror="this.parentElement.innerHTML='&lt;div class=&quot;img-fallback&quot;&gt;No se pudo cargar el gráfico de 7 días. &lt;a href=&quot;https://www.nhc.noaa.gov/&quot; target=&quot;_blank&quot;&gt;Verlo directo en NHC.gov →&lt;/a&gt;&lt;/div&gt;'">
+          <figcaption>Pronóstico de formación tropical — próximos 7 días (NHC)</figcaption>
+        </figure>
+      </div>
+      <p style="font-size:11px; color:#64748b; margin-top:16px; line-height:1.6;">
+        El seguimiento detallado de tormentas activas (nombre, categoría, cono de trayectoria) requiere un servidor intermedio porque el NHC no permite consultarlo directamente desde el navegador; está planificado para una próxima versión. Mientras tanto, consulta directamente
+        <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">nhc.noaa.gov</a> o los boletines del <a href="https://www.onamet.gob.do/" target="_blank" rel="noopener">INDOMET/ONAMET</a> y la <a href="https://coe.gob.do/" target="_blank" rel="noopener">Defensa Civil / COE</a>.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>🚦 Alertas oficiales por provincia (COE)</span></div>
+      <div class="sources-box">
+        <p>Las alertas formales por color (verde, amarilla, roja) y su distribución exacta por provincia las emite únicamente el <b>Centro de Operaciones de Emergencias (COE)</b>. No las mostramos dentro de la app porque el COE no publica esa información en un formato que se pueda leer de forma automática y confiable — mostrar un dato mal interpretado en una alerta real sería peligroso. Consulta siempre la fuente oficial:</p>
+        <p>
+          <a href="https://coe.gob.do/index.php/alertas/emision-de-alertas" target="_blank" rel="noopener">Boletines de alertas — COE</a><br>
+          <a href="https://coe.gob.do/index.php/alertas/mapa" target="_blank" rel="noopener">Mapas de alertas por provincia — COE</a><br>
+          <a href="https://www.onamet.gob.do" target="_blank" rel="noopener">INDOMET/ONAMET</a> — trayectoria, vientos y lluvia técnica
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     CONFIG
+  ============================================================ */
+  let SD = { lat: 18.4861, lon: -69.9312, name: "Santo Domingo" };
+  let RADIUS_KM = 250;
+  let HISTORY_YEARS = 10;
+  const MC = 3.0; // magnitud de completitud del catálogo (asumida para esta región)
+  const REFRESH_MS = 5 * 60 * 1000; // 5 minutos
+  const NOTIFY_MIN_MAG = 4.0;
+
+  const CITIES = [
+    { name: "Santo Domingo", lat: 18.4861, lon: -69.9312 },
+    { name: "Santiago de los Caballeros", lat: 19.4517, lon: -70.6970 },
+    { name: "Puerto Plata", lat: 19.7934, lon: -70.6884 },
+    { name: "La Romana", lat: 18.4273, lon: -68.9728 },
+    { name: "Punta Cana", lat: 18.5601, lon: -68.3725 },
+    { name: "Barahona", lat: 18.2085, lon: -71.1009 },
+    { name: "San Francisco de Macorís", lat: 19.3008, lon: -70.2537 }
+  ];
+
+  const DIR_ES = {
+    N:"norte", NNE:"nor-noreste", NE:"noreste", ENE:"este-noreste", E:"este",
+    ESE:"este-sureste", SE:"sureste", SSE:"sur-sureste", S:"sur",
+    SSW:"sur-suroeste", SW:"suroeste", WSW:"oeste-suroeste", W:"oeste",
+    WNW:"oeste-noroeste", NW:"noroeste", NNW:"nor-noroeste"
+  };
+
+  const WMO_DESC = {
+    0:"Despejado", 1:"Mayormente despejado", 2:"Parcialmente nublado", 3:"Nublado",
+    45:"Neblina", 48:"Neblina con escarcha",
+    51:"Llovizna ligera", 53:"Llovizna moderada", 55:"Llovizna intensa",
+    61:"Lluvia ligera", 63:"Lluvia moderada", 65:"Lluvia intensa",
+    80:"Chubascos ligeros", 81:"Chubascos moderados", 82:"Chubascos fuertes",
+    95:"Tormenta eléctrica", 96:"Tormenta con granizo", 99:"Tormenta severa con granizo"
+  };
+
+  function wmoIcon(code, isDay){
+    if(code === 0 || code === 1) return isDay ? "☀️" : "🌙";
+    if(code === 2) return isDay ? "⛅" : "☁️";
+    if(code === 3) return "☁️";
+    if(code === 45 || code === 48) return "🌫️";
+    if([51,53,55].indexOf(code) !== -1) return "🌦️";
+    if([61,63,65].indexOf(code) !== -1) return "🌧️";
+    if([80,81,82].indexOf(code) !== -1) return "🌧️";
+    if([95,96,99].indexOf(code) !== -1) return "⛈️";
+    return "🌤️";
+  }
+
+  const WIND_DIR_ARROWS = ["↓","↙","←","↖","↑","↗","→","↘"];
+  function windArrow(deg){
+    if(deg == null) return "↑";
+    return WIND_DIR_ARROWS[Math.round(deg / 45) % 8];
+  }
+
+  function uvLevel(uv){
+    if(uv == null) return { label: "--", cls: "" };
+    if(uv < 3) return { label: "Bajo", cls: "l1" };
+    if(uv < 6) return { label: "Moderado", cls: "l2" };
+    if(uv < 8) return { label: "Alto", cls: "l3" };
+    if(uv < 11) return { label: "Muy alto", cls: "l4" };
+    return { label: "Extremo", cls: "l5" };
+  }
+
+  /* ============================================================
+     UTILIDADES
+  ============================================================ */
+  function translatePlace(place){
+    if(!place) return "Ubicación no especificada";
+    let p = place;
+    const m = p.match(/^(\d+(?:\.\d+)?)\s*km\s+([A-Z]{1,3})\s+of\s+(.+)$/);
+    if(m){
+      const dist = m[1], dir = m[2], loc = m[3];
+      const dirEs = DIR_ES[dir] || dir;
+      p = dist + " km al " + dirEs + " de " + loc;
+    }
+    return p
+      .replace(/Dominican Republic/gi, "República Dominicana")
+      .replace(/Haiti/gi, "Haití")
+      .replace(/\bof\b/gi, "de");
+  }
+
+  function toRDTime(ms){
+    try{
+      return new Intl.DateTimeFormat("es-DO", {
+        day:"numeric", month:"long", year:"numeric", hour:"numeric", minute:"2-digit", hour12:true,
+        timeZone:"America/Santo_Domingo"
+      }).format(new Date(ms)) + " (hora RD)";
+    }catch(e){
+      return new Date(ms).toLocaleString("es-DO");
+    }
+  }
+
+  function statusLabel(status){
+    if(status === "reviewed") return "Revisado por la fuente";
+    if(status === "automatic") return "Automático, pendiente de revisión";
+    return status || "Sin estado";
+  }
+
+  function fmtPct(p){
+    if(p == null || isNaN(p)) return "Datos insuficientes";
+    const pct = p*100;
+    if(pct >= 99.5) return "Mayor de 99%";
+    if(pct < 0.1) return "Menor de 0.1%";
+    return pct.toFixed(1) + "%";
+  }
+
+  function levelClass(p){
+    if(p == null || isNaN(p)) return "";
+    if(p < 0.15) return "";
+    if(p < 0.5) return "level-mid";
+    return "level-high";
+  }
+
+  function setStatus(mode, text){
+    const badge = document.getElementById("status-badge");
+    badge.className = "badge-live" + (mode === "warn" ? " warn" : mode === "err" ? " err" : "");
+    document.getElementById("status-text").textContent = text;
+  }
+
+  function minutesAgoLabel(ts){
+    const mins = Math.max(0, Math.round((Date.now()-ts)/60000));
+    if(mins < 1) return "Actualizado justo ahora";
+    if(mins === 1) return "Actualizado hace 1 minuto";
+    return "Actualizado hace " + mins + " minutos";
+  }
+
+  /* ============================================================
+     ESTADÍSTICA: Gutenberg-Richter + Poisson (Bayes simplificado)
+     Diseño: el punto estimado siempre queda garantizado dentro
+     del rango de incertidumbre reportado (evita el error de
+     "IC inconsistente con el pronóstico").
+  ============================================================ */
+  function computeBValue(mags, mc){
+    const above = mags.filter(function(m){ return m >= mc - 1e-9; });
+    const n = above.length;
+    if(n < 2) return { b: 1.0, sigmaB: 0.5, n: n };
+    const meanMag = above.reduce(function(a,b){return a+b;},0) / n;
+    const deltaM = 0.1;
+    const denom = (meanMag - (mc - deltaM/2));
+    const b = denom > 0 ? Math.LOG10E / denom : 1.0;
+    const variance = above.reduce(function(s,m){return s+Math.pow(m-meanMag,2);},0) / (n*(n-1));
+    const sigmaB = 2.30 * b*b * Math.sqrt(variance);
+    return { b: b, sigmaB: sigmaB, n: n };
+  }
+
+  function poissonProb(lambdaPerDay, days){
+    const l = Math.max(0, lambdaPerDay) * days;
+    return 1 - Math.exp(-l);
+  }
+
+  function scaledRate(lambdaMcPerDay, b, mc, targetMag){
+    return lambdaMcPerDay * Math.pow(10, -b*(targetMag-mc));
+  }
+
+  function computeForecast(mags, mc, years){
+    const n = mags.length;
+    const bstat = computeBValue(mags, mc);
+    const days = years*365.25;
+    const lambdaPoint = n/days;
+    const z = 1.645; // 90%
+    const countErr = Math.sqrt(n);
+    const lambdaLow = Math.max(0, n - z*countErr)/days;
+    const lambdaHigh = (n + z*countErr)/days;
+    const bLow = Math.max(0.3, bstat.b - z*bstat.sigmaB);
+    const bHigh = bstat.b + z*bstat.sigmaB;
+
+    function forecastFor(targetMag, windowDays){
+      if(n < 3){
+        return { point: null, low: null, high: null, insufficient: true };
+      }
+      const point = poissonProb(scaledRate(lambdaPoint, bstat.b, mc, targetMag), windowDays);
+      const combos = [
+        poissonProb(scaledRate(lambdaLow,  bLow,  mc, targetMag), windowDays),
+        poissonProb(scaledRate(lambdaLow,  bHigh, mc, targetMag), windowDays),
+        poissonProb(scaledRate(lambdaHigh, bLow,  mc, targetMag), windowDays),
+        poissonProb(scaledRate(lambdaHigh, bHigh, mc, targetMag), windowDays)
+      ];
+      const low = Math.min.apply(null, [point].concat(combos));
+      const high = Math.max.apply(null, [point].concat(combos));
+      return { point: point, low: low, high: high, insufficient: false };
+    }
+
+    return {
+      b: bstat.b, bSigma: bstat.sigmaB, n: n,
+      f24_3: forecastFor(3.0, 1),
+      f7d_4: forecastFor(4.0, 7),
+      f30d_5: forecastFor(5.0, 30)
+    };
+  }
+
+  // Validación retrospectiva simplificada (mensual, últimos 24 meses) para M>=3 / 24h
+  function retrospectiveValidation(events){
+    if(events.length < 20) return null;
+    const sorted = events.slice().sort(function(a,b){ return a.time - b.time; });
+    const now = Date.now();
+    const monthMs = 30*24*3600*1000;
+    let scores = [], baseScores = [];
+    const overallRate = sorted.length / (HISTORY_YEARS*365.25); // eventos/día M>=Mc, tasa base
+    for(let k=23; k>=1; k--){
+      const cutoff = now - k*monthMs;
+      const trainSet = sorted.filter(function(e){ return e.time < cutoff && e.time > cutoff - HISTORY_YEARS*365.25*24*3600*1000; });
+      const testSet = sorted.filter(function(e){ return e.time >= cutoff && e.time < cutoff + 24*3600*1000; });
+      if(trainSet.length < 10) continue;
+      const mags = trainSet.map(function(e){return e.mag;});
+      const b = computeBValue(mags, MC).b;
+      const lambdaMc = trainSet.length/(HISTORY_YEARS*365.25);
+      const rate3 = scaledRate(lambdaMc, b, MC, 3.0);
+      const forecastP = poissonProb(rate3, 1);
+      const outcome = testSet.some(function(e){ return e.mag >= 3.0; }) ? 1 : 0;
+      scores.push(Math.pow(forecastP-outcome,2));
+
+      const baseP = poissonProb(scaledRate(overallRate, b, MC, 3.0), 1);
+      baseScores.push(Math.pow(baseP-outcome,2));
+    }
+    if(scores.length < 6) return null;
+    const brier = scores.reduce(function(a,b){return a+b;},0)/scores.length;
+    const baseBrier = baseScores.reduce(function(a,b){return a+b;},0)/baseScores.length;
+    return { brier: brier, baseBrier: baseBrier, n: scores.length };
+  }
+
+  /* ============================================================
+     MAPA
+  ============================================================ */
+  const map = L.map("map").setView([SD.lat, SD.lon], 6);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    maxZoom: 18, attribution: "&copy; OpenStreetMap & CARTO"
+  }).addTo(map);
+
+  let centerCircle = L.circle([SD.lat, SD.lon], {
+    radius: RADIUS_KM*1000, color:"#3b82f6", weight:1.5, dashArray:"4 6", fillColor:"#3b82f6", fillOpacity:0.03
+  }).addTo(map);
+
+  let centerMarker = L.marker([SD.lat, SD.lon], {
+    icon: L.divIcon({
+      className: "",
+      html: '<div style="background:#3b82f6;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px #3b82f6;"></div>',
+      iconSize:[12,12]
+    })
+  }).addTo(map).bindPopup("<b>" + SD.name + "</b><br>Centro del análisis");
+
+  const legend = L.control({position:"bottomright"});
+  legend.onAdd = function(){
+    const div = L.DomUtil.create("div","map-legend");
+    div.id = "map-legend-box";
+    return div;
+  };
+  legend.addTo(map);
+
+  function renderLegend(){
+    const box = document.getElementById("map-legend-box");
+    if(!box) return;
+    box.innerHTML =
+      '<div class="row"><span class="legend-dot" style="background:#3b82f6"></span> ' + SD.name + ' (centro)</div>' +
+      '<div class="row"><span class="legend-dot" style="background:#fbbf24"></span> Sismo M &lt; 4.0</div>' +
+      '<div class="row"><span class="legend-dot" style="background:#ef4444"></span> Sismo M ≥ 4.0</div>' +
+      '<div class="row">⭕ Radio de ' + RADIUS_KM + ' km analizado</div>';
+  }
+  renderLegend();
+
+  function updateCenterOverlay(){
+    map.setView([SD.lat, SD.lon], map.getZoom());
+    centerCircle.setLatLng([SD.lat, SD.lon]);
+    centerCircle.setRadius(RADIUS_KM*1000);
+    centerMarker.setLatLng([SD.lat, SD.lon]);
+    centerMarker.setPopupContent("<b>" + SD.name + "</b><br>Centro del análisis");
+    renderLegend();
+    const coordsEl = document.getElementById("txt-coords");
+    if(coordsEl) coordsEl.value = SD.lat.toFixed(4) + ", " + SD.lon.toFixed(4);
+    const radioLabel = document.getElementById("radio-label");
+    if(radioLabel) radioLabel.textContent = "Radio analizado: " + RADIUS_KM + " km desde " + SD.name;
+
+    const banner = document.getElementById("ctx-radius-banner");
+    if(banner) banner.textContent = RADIUS_KM + " km de " + SD.name;
+    document.querySelectorAll(".ctx-radius-full").forEach(function(el){
+      el.textContent = "Dentro de " + RADIUS_KM + " km de " + SD.name + ".";
+    });
+    const meaning = document.getElementById("ctx-radius-meaning");
+    if(meaning) meaning.textContent = RADIUS_KM + " km alrededor de " + SD.name;
+  }
+
+  let markers = [];
+  function clearMarkers(){ markers.forEach(function(m){ map.removeLayer(m); }); markers = []; }
+
+  /* ============================================================
+     CARGA DE SISMOS
+  ============================================================ */
+  let lastEvents = [];
+  let lastUpdateTs = null;
+  let seenEventIds = new Set(JSON.parse(localStorage.getItem("sismoprob_seen")||"[]"));
+
+  function setProgressStep(n){
+    const box = document.getElementById("progress-steps");
+    box.classList.add("show");
+    box.querySelectorAll(".step").forEach(function(el){
+      const s = parseInt(el.getAttribute("data-step"),10);
+      el.classList.remove("active","done");
+      if(s < n) el.classList.add("done");
+      else if(s === n) el.classList.add("active");
+    });
+    if(n >= 4){
+      setTimeout(function(){ box.classList.remove("show"); }, 2500);
+    }
+  }
+
+  function setCardLoading(loading){
+    ["card-24h","card-7d","card-30d"].forEach(function(id){
+      document.getElementById(id).classList.toggle("is-loading", loading);
+    });
+  }
+
+  async function cargarSismos(){
+    setCardLoading(true);
+    setStatus("warn","Actualizando…");
+    setProgressStep(1);
+    try{
+      const start = new Date(); start.setFullYear(start.getFullYear()-HISTORY_YEARS);
+      const startStr = start.toISOString().slice(0,10);
+      const url = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
+        + "&latitude=" + SD.lat + "&longitude=" + SD.lon
+        + "&maxradiuskm=" + RADIUS_KM
+        + "&minmagnitude=" + MC
+        + "&starttime=" + startStr
+        + "&orderby=time";
+
+      const res = await fetch(url);
+      if(!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      setProgressStep(2);
+
+      const events = data.features.map(function(f){
+        return {
+          id: f.id,
+          mag: f.properties.mag,
+          place: f.properties.place,
+          time: f.properties.time,
+          status: f.properties.status,
+          url: f.properties.url,
+          lat: f.geometry.coordinates[1],
+          lon: f.geometry.coordinates[0],
+          depth: f.geometry.coordinates[2]
+        };
+      }).filter(function(e){ return e.mag != null; });
+
+      lastEvents = events;
+      setProgressStep(3);
+
+      const forecast = computeForecast(events.map(function(e){return e.mag;}), MC, HISTORY_YEARS);
+      renderForecast(forecast);
+
+      const retro = retrospectiveValidation(events);
+      renderRetro(retro);
+
+      renderMapAndList(events);
+
+      lastUpdateTs = Date.now();
+      document.getElementById("update-line").textContent = minutesAgoLabel(lastUpdateTs);
+      setStatus("ok","USGS/ANSS conectado");
+      document.getElementById("status-badge").classList.remove("warn","err");
+      checkNewSignificant(events);
+      setProgressStep(4);
+    }catch(err){
+      console.error("Error cargando sismos:", err);
+      setStatus("err","Conexión interrumpida");
+      document.getElementById("lista-sismos").innerHTML =
+        '<div class="loading" style="color:#f87171;">⚠️ No se pudo conectar con el catálogo sísmico (USGS). Los datos mostrados pueden estar desactualizados. Reintentando automáticamente…</div>';
+    }finally{
+      setCardLoading(false);
+    }
+  }
+
+  function renderForecast(forecast){
+    const map3 = { "24h": forecast.f24_3, "7d": forecast.f7d_4, "30d": forecast.f30d_5 };
+    Object.keys(map3).forEach(function(key){
+      const f = map3[key];
+      const valEl = document.getElementById("prob-"+key);
+      const icEl = document.getElementById("ic-"+key);
+      valEl.classList.remove("level-mid","level-high");
+      if(f.insufficient){
+        valEl.textContent = "Datos insuficientes";
+        icEl.textContent = "No hay suficientes sismos históricos en el radio analizado para estimar con confianza.";
+        return;
+      }
+      valEl.textContent = fmtPct(f.point);
+      const lc = levelClass(f.point);
+      if(lc) valEl.classList.add(lc);
+      icEl.textContent = "Rango de incertidumbre: " + fmtPct(f.low) + " – " + fmtPct(f.high);
+    });
+    document.getElementById("val-b").textContent = forecast.b.toFixed(2) + " ± " + forecast.bSigma.toFixed(2);
+  }
+
+  function renderRetro(retro){
+    if(!retro){
+      document.getElementById("val-brier").textContent = "--";
+      document.getElementById("val-brier-sub").textContent = "Datos insuficientes para validar";
+      return;
+    }
+    document.getElementById("val-brier").textContent = retro.brier.toFixed(3);
+    const better = retro.brier < retro.baseBrier;
+    document.getElementById("val-brier-sub").textContent =
+      (better ? "Mejor" : "Similar/menor") + " que el modelo base (" + retro.baseBrier.toFixed(3) + "), n=" + retro.n + " meses";
+  }
+
+  function renderMapAndList(events){
+    clearMarkers();
+    const contenedor = document.getElementById("lista-sismos");
+    const totalBadge = document.getElementById("total-badge");
+    contenedor.innerHTML = "";
+
+    const recientes = events.slice().sort(function(a,b){return b.time-a.time;}).slice(0,25);
+    totalBadge.textContent = events.length + " eventos en " + HISTORY_YEARS + " años · mostrando los " + recientes.length + " más recientes";
+
+    const hoyRD = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santo_Domingo" }).format(new Date());
+    const sismosHoy = events.filter(function(e){
+      return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santo_Domingo" }).format(new Date(e.time)) === hoyRD;
+    });
+    const todayBadge = document.getElementById("today-badge");
+    if(sismosHoy.length > 0){
+      todayBadge.textContent = "🔴 " + sismosHoy.length + " hoy";
+      todayBadge.style.display = "inline-flex";
+      document.getElementById("sismos-details").open = true;
+    } else {
+      todayBadge.style.display = "none";
+    }
+    document.getElementById("map-summary").textContent =
+      "Se encontraron " + events.length + " sismos de magnitud " + MC + " o mayor dentro de " + RADIUS_KM + " km de " + SD.name + ", en los últimos " + HISTORY_YEARS + " años.";
+
+    if(recientes.length === 0){
+      contenedor.innerHTML = '<div class="loading">No hay sismos registrados recientemente en esta área.</div>';
+      return;
+    }
+
+    recientes.forEach(function(sismo){
+      const esFuerte = sismo.mag >= 4.0;
+      const claseMag = esFuerte ? "mag-pill" : "mag-pill moderate";
+      const color = esFuerte ? "#ef4444" : "#fbbf24";
+
+      const marker = L.circleMarker([sismo.lat, sismo.lon], {
+        radius: Math.max(4, sismo.mag*2.2),
+        color: color, fillColor: color, fillOpacity: 0.7, weight:1
+      }).addTo(map).bindPopup(
+        "<b>Magnitud " + sismo.mag.toFixed(1) + "</b><br>" +
+        translatePlace(sismo.place) + "<br>" +
+        "Profundidad: " + (sismo.depth!=null ? Math.round(sismo.depth)+" km" : "N/D") + "<br>" +
+        toRDTime(sismo.time) + "<br>" +
+        statusLabel(sismo.status)
+      );
+      markers.push(marker);
+
+      const item = document.createElement("div");
+      item.className = "sismo-item";
+      item.innerHTML =
+        '<div class="'+claseMag+'">M '+sismo.mag.toFixed(1)+'</div>' +
+        '<div class="sismo-info">' +
+          '<div class="sismo-lugar">'+translatePlace(sismo.place)+'</div>' +
+          '<div class="sismo-meta">' +
+            '<span>📅 '+toRDTime(sismo.time)+'</span>' +
+            '<span>⬇️ '+(sismo.depth!=null ? Math.round(sismo.depth)+' km de profundidad' : 'profundidad N/D')+'</span>' +
+            '<span>✔️ '+statusLabel(sismo.status)+'</span>' +
+          '</div>' +
+        '</div>';
+      item.addEventListener("click", function(){
+        map.flyTo([sismo.lat, sismo.lon], 9, { duration: 1.2 });
+        marker.openPopup();
+      });
+      contenedor.appendChild(item);
+    });
+  }
+
+  function checkNewSignificant(events){
+    const strong = events.filter(function(e){ return e.mag >= NOTIFY_MIN_MAG; });
+    strong.forEach(function(e){
+      if(!seenEventIds.has(e.id)){
+        seenEventIds.add(e.id);
+        if(window.Notification && Notification.permission === "granted" && lastUpdateTs){
+          try{
+            new Notification("Sismo M " + e.mag.toFixed(1) + " detectado", {
+              body: translatePlace(e.place) + " · " + toRDTime(e.time),
+              icon: undefined
+            });
+          }catch(err){ /* silencioso */ }
         }
+      }
+    });
+    // conservar solo ids recientes para no crecer indefinidamente
+    const idsArr = Array.from(seenEventIds).slice(-500);
+    seenEventIds = new Set(idsArr);
+    localStorage.setItem("sismoprob_seen", JSON.stringify(idsArr));
+  }
 
-        cargarDashboard();
-    </script>
+  /* ============================================================
+     CONTROLES UI: tabs, toggle avanzado, notificaciones, refresco
+  ============================================================ */
+  const selCentro = document.getElementById("sel-centro");
+  CITIES.forEach(function(c, i){
+    const opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = c.name;
+    if(c.name === SD.name) opt.selected = true;
+    selCentro.appendChild(opt);
+  });
+  selCentro.addEventListener("change", function(e){
+    const c = CITIES[parseInt(e.target.value, 10)];
+    SD = { lat: c.lat, lon: c.lon, name: c.name };
+    updateCenterOverlay();
+  });
+
+  document.getElementById("sel-radio").addEventListener("change", function(e){
+    RADIUS_KM = parseInt(e.target.value, 10);
+    updateCenterOverlay();
+  });
+
+  document.getElementById("sel-anios").addEventListener("change", function(e){
+    HISTORY_YEARS = parseInt(e.target.value, 10);
+  });
+
+  document.querySelectorAll(".tab-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".tab-btn").forEach(function(b){ b.classList.remove("active"); });
+      document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
+      if(btn.dataset.tab === "sismos"){ setTimeout(function(){ map.invalidateSize(); }, 50); }
+      if(btn.dataset.tab === "clima" && !climaLoaded){ cargarClima(); }
+      if(btn.dataset.tab === "ciclones" && !ciclonesLoaded){ cargarCiclones(); }
+    });
+  });
+
+  document.getElementById("toggle-advanced").addEventListener("change", function(e){
+    document.body.classList.toggle("advanced-mode", e.target.checked);
+    if(e.target.checked){
+      const advCard = document.querySelector(".card.advanced-only");
+      if(advCard) setTimeout(function(){ advCard.scrollIntoView({ behavior:"smooth", block:"center" }); }, 50);
+    }
+  });
+
+  document.getElementById("btn-recalcular").addEventListener("click", function(){
+    cargarSismos();
+  });
+
+  document.getElementById("btn-notify").addEventListener("click", function(){
+    if(!window.Notification){
+      alert("Tu navegador no soporta notificaciones.");
+      return;
+    }
+    Notification.requestPermission().then(function(perm){
+      const btn = document.getElementById("btn-notify");
+      if(perm === "granted"){
+        btn.textContent = "🔔 Notificaciones activadas (M≥" + NOTIFY_MIN_MAG.toFixed(1) + ")";
+      }else{
+        btn.textContent = "🔕 Notificaciones no permitidas";
+      }
+    });
+  });
+
+  setInterval(function(){
+    if(lastUpdateTs) document.getElementById("update-line").textContent = minutesAgoLabel(lastUpdateTs);
+  }, 30000);
+  setInterval(cargarSismos, REFRESH_MS);
+
+  /* ============================================================
+     CLIMA (Open-Meteo)
+  ============================================================ */
+  let climaLoaded = false;
+  let selectedCityIndex = 0;
+  let climaCache = [];
+
+  async function cargarClima(){
+    climaLoaded = true;
+    const grid = document.getElementById("clima-grid");
+    try{
+      const results = await Promise.all(CITIES.map(function(c){
+        const url = "https://api.open-meteo.com/v1/forecast?latitude="+c.lat+"&longitude="+c.lon
+          + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,is_day"
+          + "&hourly=temperature_2m,weather_code,precipitation_probability"
+          + "&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max"
+          + "&forecast_days=7&timezone=America%2FSanto_Domingo&temperature_unit=fahrenheit&wind_speed_unit=kmh";
+        return fetch(url).then(function(r){ return r.json(); }).then(function(d){ return { city:c, data:d }; });
+      }));
+      climaCache = results;
+      grid.innerHTML = "";
+      results.forEach(function(r, idx){
+        const cur = r.data.current || {};
+        const desc = WMO_DESC[cur.weather_code] || "Condición variable";
+        const card = document.createElement("div");
+        card.className = "clima-card" + (idx===selectedCityIndex ? " selected" : "");
+        card.innerHTML =
+          '<div class="clima-city">'+r.city.name+'</div>' +
+          '<div class="clima-temp">'+(cur.temperature_2m!=null ? Math.round(cur.temperature_2m)+"°F" : "--")+'</div>' +
+          '<div class="clima-desc">'+desc+'</div>' +
+          '<div class="clima-rain">💧 '+(cur.precipitation!=null ? cur.precipitation.toFixed(1) : "0.0")+' mm ahora</div>';
+        card.addEventListener("click", function(){
+          selectedCityIndex = idx;
+          document.querySelectorAll(".clima-card").forEach(function(c){c.classList.remove("selected");});
+          card.classList.add("selected");
+          renderClimaDetail(r);
+          const hero = document.getElementById("weather-hero");
+          setTimeout(function(){ hero.scrollIntoView({ behavior: "smooth", block: "start" }); }, 50);
+        });
+        grid.appendChild(card);
+      });
+      document.getElementById("clima-update").textContent = minutesAgoLabel(Date.now());
+      renderClimaDetail(results[selectedCityIndex]);
+    }catch(err){
+      console.error("Error cargando clima:", err);
+      grid.innerHTML = '<div class="loading" style="color:#f87171;">⚠️ No se pudo conectar con el servicio de clima (Open-Meteo). Reintentando…</div>';
+      climaLoaded = false;
+    }
+  }
+
+  function renderClimaDetail(r){
+    const cur = r.data.current || {};
+    const hourly = r.data.hourly || {};
+    const daily = r.data.daily || {};
+    const isDay = cur.is_day !== 0;
+
+    // Hero
+    document.getElementById("hero-city").textContent = r.city.name;
+    document.getElementById("hero-temp").textContent = (cur.temperature_2m!=null ? Math.round(cur.temperature_2m) : "--") + "°";
+    document.getElementById("hero-desc").textContent = WMO_DESC[cur.weather_code] || "Condición variable";
+    const tmax0 = daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[0]) : "--";
+    const tmin0 = daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[0]) : "--";
+    document.getElementById("hero-minmax").textContent = "Máx: " + tmax0 + "° · Mín: " + tmin0 + "°";
+    document.getElementById("weather-hero").classList.toggle("is-night", !isDay);
+
+    // Franja horaria (próximas 24h desde ahora)
+    const strip = document.getElementById("hourly-strip");
+    strip.innerHTML = "";
+    if(hourly.time){
+      const nowMs = Date.now();
+      let startIdx = hourly.time.findIndex(function(t){ return new Date(t).getTime() >= nowMs; });
+      if(startIdx < 0) startIdx = 0;
+      for(let i = startIdx; i < Math.min(startIdx + 24, hourly.time.length); i++){
+        const d = new Date(hourly.time[i]);
+        const label = i === startIdx ? "Ahora" : new Intl.DateTimeFormat("es-DO", { hour:"numeric", hour12:true }).format(d);
+        const hIsDay = d.getHours() >= 6 && d.getHours() < 18;
+        const item = document.createElement("div");
+        item.className = "hourly-item";
+        item.innerHTML =
+          '<div class="h-time">'+label+'</div>' +
+          '<div class="h-icon">'+wmoIcon(hourly.weather_code[i], hIsDay)+'</div>' +
+          '<div class="h-temp">'+Math.round(hourly.temperature_2m[i])+'°</div>' +
+          '<div class="h-rain">'+(hourly.precipitation_probability && hourly.precipitation_probability[i] > 10 ? hourly.precipitation_probability[i]+"%" : "")+'</div>';
+        strip.appendChild(item);
+      }
+    }
+
+    // Widgets
+    document.getElementById("w-feels").textContent = (cur.apparent_temperature!=null ? Math.round(cur.apparent_temperature) : "--") + "°";
+    document.getElementById("w-feels-sub").textContent = cur.apparent_temperature!=null && cur.temperature_2m!=null
+      ? (cur.apparent_temperature > cur.temperature_2m ? "Se siente más cálido de lo real" : cur.apparent_temperature < cur.temperature_2m ? "Se siente más fresco de lo real" : "Similar a la temperatura real")
+      : "";
+
+    const hum = cur.relative_humidity_2m;
+    document.getElementById("w-humidity").textContent = (hum!=null ? hum : "--") + "%";
+    document.getElementById("w-humidity-bar").style.width = (hum!=null ? hum : 0) + "%";
+
+    document.getElementById("w-wind-arrow").style.transform = "rotate(" + ((cur.wind_direction_10m||0)+180) + "deg)";
+    document.getElementById("w-wind-arrow").textContent = "↑";
+    document.getElementById("w-wind").textContent = (cur.wind_speed_10m!=null ? Math.round(cur.wind_speed_10m) : "--") + " km/h";
+
+    const rainProb = daily.precipitation_probability_max ? daily.precipitation_probability_max[0] : null;
+    const rainSum = daily.precipitation_sum ? daily.precipitation_sum[0] : null;
+    document.getElementById("w-rain-prob").textContent = (rainProb!=null ? rainProb : "--") + "%";
+    document.getElementById("w-rain-sub").textContent = "probabilidad hoy · " + (rainSum!=null ? rainSum.toFixed(1) : "0.0") + " mm esperados";
+
+    const fmtHour = function(iso){
+      if(!iso) return "--:--";
+      return new Intl.DateTimeFormat("es-DO", { hour:"numeric", minute:"2-digit", hour12:true }).format(new Date(iso));
+    };
+    const sunrise = daily.sunrise ? daily.sunrise[0] : null;
+    const sunset = daily.sunset ? daily.sunset[0] : null;
+    document.getElementById("w-sunrise").textContent = fmtHour(sunrise);
+    document.getElementById("w-sunset").textContent = fmtHour(sunset);
+    if(sunrise && sunset){
+      const sr = new Date(sunrise).getTime(), ss = new Date(sunset).getTime(), now = Date.now();
+      const frac = Math.max(0, Math.min(1, (now - sr) / (ss - sr)));
+      const x = 2 + frac * 96;
+      const y = 30 - Math.sin(frac * Math.PI) * 30;
+      document.getElementById("w-sun-dot").setAttribute("cx", x);
+      document.getElementById("w-sun-dot").setAttribute("cy", y);
+    }
+
+    const uv = daily.uv_index_max ? daily.uv_index_max[0] : null;
+    const uvInfo = uvLevel(uv);
+    document.getElementById("w-uv").textContent = uv!=null ? Math.round(uv) : "--";
+    document.getElementById("w-uv-sub").textContent = uvInfo.label;
+    const segCount = uv!=null ? Math.min(10, Math.max(1, Math.round(uv))) : 0;
+    document.querySelectorAll("#w-uv-scale span").forEach(function(seg, i){
+      seg.classList.toggle("on", i < segCount);
+    });
+
+    // Pronóstico 7 días
+    const days = document.getElementById("clima-days");
+    document.getElementById("clima-detail-title").textContent = "Pronóstico — " + r.city.name;
+    days.innerHTML = "";
+    (daily.time||[]).forEach(function(dateStr, i){
+      const d = new Date(dateStr+"T12:00:00");
+      const dayName = i === 0 ? "Hoy" : new Intl.DateTimeFormat("es-DO", { weekday:"short", day:"numeric", month:"short" }).format(d);
+      const tmax = daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[i]) : "--";
+      const tmin = daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[i]) : "--";
+      const rain = daily.precipitation_sum ? daily.precipitation_sum[i].toFixed(1) : "0.0";
+      const icon = daily.weather_code ? wmoIcon(daily.weather_code[i], true) : "🌤️";
+      const el = document.createElement("div");
+      el.className = "clima-day";
+      el.innerHTML =
+        '<div class="d-name">'+dayName+'</div>' +
+        '<div class="h-icon">'+icon+'</div>' +
+        '<div class="d-temp">'+tmax+'°F / '+tmin+'°F</div>' +
+        '<div class="d-rain">💧 '+rain+' mm</div>';
+      days.appendChild(el);
+    });
+  }
+
+  setInterval(function(){ if(climaLoaded) cargarClima(); }, 10*60*1000);
+
+  /* ============================================================
+     CICLONES
+  ============================================================ */
+  let ciclonesLoaded = false;
+  function cargarCiclones(){
+    ciclonesLoaded = true;
+    const now = new Date();
+    const month = now.getMonth()+1; // 1-12
+    const inSeason = (month >= 6 && month <= 11);
+    const badge = document.getElementById("season-badge");
+    badge.textContent = inSeason
+      ? "🌪️ Temporada de huracanes activa (1 jun – 30 nov)"
+      : "Fuera de temporada oficial (1 jun – 30 nov)";
+    badge.className = "season-badge " + (inSeason ? "active" : "off");
+
+    const ts = Date.now();
+    document.getElementById("img-2d").src = "https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png?t="+ts;
+    document.getElementById("img-7d").src = "https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png?t="+ts;
+    document.getElementById("ciclon-update").textContent = minutesAgoLabel(ts);
+  }
+  setInterval(function(){ if(ciclonesLoaded) cargarCiclones(); }, 15*60*1000);
+
+  /* ============================================================
+     INICIO
+  ============================================================ */
+  cargarSismos();
+
+})();
+</script>
 </body>
 </html>
