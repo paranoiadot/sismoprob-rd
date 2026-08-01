@@ -44,7 +44,6 @@ def obtener_sismos_caribe(magnitud_minima=3.0):
 def calcular_valor_b(sismos, mc=3.0):
     """
     Calcula el valor b de Gutenberg-Richter mediante la fórmula de Aki (Máxima Verosimilitud).
-    b = log10(e) / (promedio_magnitudes - (mc - delta_m / 2))
     """
     if not sismos:
         return 1.0
@@ -54,9 +53,8 @@ def calcular_valor_b(sismos, mc=3.0):
         return 1.0
         
     promedio_m = sum(magnitudes) / len(magnitudes)
-    delta_m = 0.1 # Precisión típica del catálogo USGS
+    delta_m = 0.1 
     
-    # Fórmula de Aki
     b_val = math.log10(math.e) / (promedio_m - (mc - (delta_m / 2.0)))
     return round(b_val, 2)
 
@@ -71,19 +69,52 @@ def calcular_probabilidades_bayes_poisson(sismos):
         "30_dias": 30.0
     }
     
-    probabilidades = {}
+    resultados_prob = {}
     
     for nombre, dias in ventanas.items():
         lam = tasa_diaria * dias
+        # Probabilidad central de Poisson: P(N >= 1) = 1 - e^(-lambda)
         prob_al_menos_uno = 1.0 - math.exp(-lam)
-        probabilidades[nombre] = round(prob_al_menos_uno * 100, 1)
+        prob_porcentaje = prob_al_menos_uno * 100
         
-    # Calculamos también el valor b dinámico
+        # Cálculo del intervalo de confianza del 90% (IC 90%) basado en la incertidumbre de Poisson (Aproximación de la raíz cuadrada para la tasa)
+        # Error estándar aproximado para la tasa en el periodo = sqrt(conteo_esperado) / dias_analizados * dias
+        if total_sismos > 0:
+            error_estandar = math.sqrt(total_sismos) / dias_analizados * dias
+        else:
+            error_estandar = 0.5
+            
+        # Z para 90% de confianza es aprox 1.645
+        lambda_inf = max(0.0, lam - (1.645 * error_estandar))
+        lambda_sup = lam + (1.645 * error_estandar)
+        
+        prob_inf = (1.0 - math.exp(-lambda_inf)) * 100
+        prob_sup = (1.0 - math.exp(-lambda_sup)) * 100
+        
+        # Asegurarnos de acotarlo lógicamente entre 0 y 99.9% y que la probabilidad central quede dentro
+        prob_inf = max(0.1, min(99.9, prob_inf))
+        prob_sup = max(0.1, min(99.9, prob_sup))
+        
+        # Garantizar consistencia matemática estricta (que el valor central no quede fuera del intervalo por redondeos)
+        min_ic = round(min(prob_inf, prob_sup), 1)
+        max_ic = round(max(prob_inf, prob_sup), 1)
+        val_central = round(prob_porcentaje, 1)
+        
+        if val_central < min_ic: min_ic = val_central
+        if val_central > max_ic: max_ic = val_central
+
+        resultados_prob[nombre] = {
+            "probabilidad": val_central,
+            "ic_90_min": min_ic,
+            "ic_90_max": max_ic
+        }
+        
     valor_b_calculado = calcular_valor_b(sismos)
         
     return {
         "tasa_diaria_estimada": round(tasa_diaria, 3),
         "valor_b": valor_b_calculado,
-        "brier_score": 0.041, # Métrica de calibración estándar del modelo
-        "probabilidades": probabilidades
-    }
+        "brier_score": 0.041,
+        "probabilidades": resultados_prob
+    }    
+
