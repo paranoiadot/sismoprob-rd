@@ -5,11 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SismoPro RD - Monitoreo sísmico y alertas del Caribe</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#111827">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Monitoreo sísmico en tiempo real, clima y seguimiento de ciclones para República Dominicana.">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <style>
@@ -392,95 +394,341 @@
   .ver-mas:hover { background:rgba(59,130,246,.14); }
   .lab-body { margin-top:16px; }
   @media (max-width:600px){ .ultimo-grid{ flex-direction:column; align-items:flex-start; } .ultimo-mag{ text-align:left; min-width:0; } .estado-titulo{ font-size:19px; } }
+  /* ==========================================================
+     SISMOPRO 2.0 — sistema visual estilo iOS (oscuro)
+     Va al final del <style> para sobrescribir estilos previos.
+  ========================================================== */
+  :root{
+    --bg:#000; --bg-elev:#0b0b0f;
+    --surface:rgba(28,28,30,.72); --surface-solid:#1c1c1e; --surface-2:#2c2c2e;
+    --sep:rgba(84,84,88,.45);
+    --t1:#fff; --t2:rgba(235,235,245,.62); --t3:rgba(235,235,245,.32);
+    --blue:#0A84FF; --green:#30D158; --yellow:#FFD60A; --orange:#FF9F0A; --red:#FF453A;
+    --r-lg:22px; --r-md:14px;
+    --blur:saturate(180%) blur(22px);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,sans-serif;
+  }
+  html{ background:var(--bg); }
+  body{
+    font-family:var(--font); background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(10,132,255,.10), transparent 60%),
+      radial-gradient(900px 500px at -10% 10%, rgba(255,69,58,.07), transparent 60%), var(--bg);
+    background-attachment:fixed; color:var(--t1); padding:0; display:block;
+    -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
+  }
+  a{ color:var(--blue); text-decoration:none; }
+  .container{ max-width:1280px; margin:0 auto; padding:0 20px 40px; }
+  .glass,.card,.ios-list,.widget-card,.clima-card,.forecast-card,.estado-card{
+    background:var(--surface); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:.5px solid rgba(255,255,255,.08); border-radius:var(--r-lg); box-shadow:none;
+  }
+  .card{ padding:18px; }
+  .card-header{ font-size:13px; font-weight:600; color:var(--t2); text-transform:none; letter-spacing:0; margin-bottom:12px; }
+
+  /* ---------- Encabezado + pestañas ---------- */
+  .header{
+    position:sticky; top:0; z-index:1000; margin:0 -20px 18px; padding:14px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    background:rgba(0,0,0,.6); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    border:0; border-bottom:.5px solid var(--sep); border-radius:0; box-shadow:none; flex-wrap:nowrap;
+  }
+  .brand-wrap{ display:flex; align-items:center; gap:10px; min-width:0; }
+  .brand-mark{ flex:0 0 auto; border-radius:9px; box-shadow:0 4px 14px rgba(255,69,58,.35); }
+  .brand{ font-size:17px; font-weight:700; letter-spacing:-.02em; }
+  .brand span{ color:var(--red); text-shadow:none; }
+  .tagline{ font-size:12px; color:var(--t2); margin:1px 0 0; }
+  .tabs{
+    display:flex; gap:2px; margin:0; padding:3px; background:rgba(118,118,128,.24);
+    border-radius:11px; flex-wrap:nowrap;
+  }
+  .tab-btn{
+    display:flex; align-items:center; gap:6px; padding:7px 16px; border:0; border-radius:9px;
+    background:transparent; color:var(--t1); font:600 13px var(--font); cursor:pointer; box-shadow:none;
+    transition:background .2s ease, color .2s ease;
+  }
+  .tab-btn svg{ width:17px; height:17px; }
+  .tab-btn:hover{ color:var(--t1); background:rgba(255,255,255,.06); }
+  .tab-btn.active{ background:#636366; color:#fff; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  .badge-live{
+    background:rgba(48,209,88,.14); color:var(--green); border:0; box-shadow:none;
+    padding:6px 12px; font-size:12px; font-weight:600; white-space:nowrap;
+  }
+  .badge-live .dot{ width:7px; height:7px; background:var(--green); box-shadow:none; }
+
+  @media (max-width:760px){
+    .container{ padding:0 14px calc(96px + env(safe-area-inset-bottom)); }
+    .header{ margin:0 -14px 14px; padding:12px 14px; -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(0,0,0,.88); }
+    .tagline{ display:none; }
+    .tabs{
+      position:fixed; left:0; right:0; bottom:0; z-index:2000; display:grid; grid-template-columns:repeat(3,1fr);
+      padding:6px 8px calc(6px + env(safe-area-inset-bottom)); border-radius:0; gap:0;
+      background:rgba(18,18,20,.82); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+      border-top:.5px solid var(--sep);
+    }
+    .tab-btn{ flex-direction:column; gap:3px; padding:6px 0; font-size:10.5px; font-weight:500; color:rgba(235,235,245,.5); border-radius:0; }
+    .tab-btn svg{ width:25px; height:25px; }
+    .tab-btn.active,.tab-btn:hover{ background:transparent; color:var(--blue); box-shadow:none; }
+  }
+
+  /* ---------- Layout Sismos ---------- */
+  .sp-layout{ display:grid; grid-template-columns:minmax(0,1.45fr) minmax(340px,1fr); gap:22px; align-items:start; }
+  .sp-map-col{ position:sticky; top:84px; }
+  .sp-panel{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+  .map-wrap{ position:relative; border-radius:var(--r-lg); overflow:hidden; border:.5px solid rgba(255,255,255,.08); }
+  #map{ height:calc(100vh - 150px); min-height:460px; border:0; border-radius:0; box-shadow:none; background:#0d1117; }
+  .map-meta{ display:flex; justify-content:space-between; gap:12px; margin-top:10px; font-size:12px; color:var(--t3); }
+  .map-meta #map-summary{ color:var(--t3); font-size:12px; margin:0; }
+  @media (max-width:900px){
+    .sp-layout{ grid-template-columns:1fr; gap:14px; }
+    .sp-map-col{ position:relative; top:0; }
+    #map{ height:46vh; min-height:300px; }
+    .map-meta{ flex-direction:column; gap:2px; }
+  }
+
+  /* Estado sísmico flotante sobre el mapa */
+  .estado-card{
+    position:absolute; z-index:500; top:12px; left:12px; right:12px; max-width:440px;
+    display:flex; align-items:flex-start; gap:12px; padding:12px 14px; margin:0; border-radius:18px;
+    background:rgba(22,22,24,.72);
+  }
+  .estado-icono{ flex:0 0 auto; width:12px; height:12px; margin-top:5px; border-radius:50%; background:var(--t3); font-size:0; position:relative; }
+  .estado-icono::after{ content:""; position:absolute; inset:-5px; border-radius:50%; border:2px solid currentColor; opacity:0; animation:ring 2.4s ease-out infinite; }
+  .estado-normal .estado-icono{ background:var(--green); color:var(--green); }
+  .estado-moderado .estado-icono{ background:var(--orange); color:var(--orange); }
+  .estado-alto .estado-icono{ background:var(--red); color:var(--red); }
+  .estado-normal,.estado-moderado,.estado-alto{ background:rgba(22,22,24,.72); border-color:rgba(255,255,255,.08); }
+  .estado-alto{ box-shadow:0 0 0 1px rgba(255,69,58,.6), 0 10px 40px rgba(255,69,58,.25); }
+  .estado-label{ font-size:11px; font-weight:600; color:var(--t2); text-transform:none; letter-spacing:0; }
+  .estado-titulo{ font-size:17px; font-weight:700; margin-top:1px; letter-spacing:-.02em; }
+  .estado-detalle{ font-size:13px; color:var(--t2); margin-top:2px; line-height:1.35; }
+  @keyframes ring{ 0%{ transform:scale(.6); opacity:.8; } 100%{ transform:scale(2.2); opacity:0; } }
+
+  /* Encabezados de sección (estilo iOS) */
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; margin:10px 4px 0; }
+  .section-head:first-child{ margin-top:0; }
+  .section-head h2{ font-size:22px; font-weight:700; letter-spacing:-.025em; margin:0; }
+  .section-aside{ font-size:13px; color:var(--t2); }
+  .today-badge{ background:rgba(255,69,58,.16); color:#ff6961; border:0; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px; }
+
+  /* Último sismo */
+  .ultimo-card{ padding:18px; }
+  .ultimo-grid{ display:flex; gap:16px; align-items:center; }
+  .ultimo-mag{
+    flex:0 0 auto; width:84px; height:84px; border-radius:24px; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; font-size:36px; font-weight:700; letter-spacing:-.03em;
+    color:#1c1c1e; background:var(--yellow); min-width:0; text-align:center; line-height:1;
+  }
+  .ultimo-mag small{ font-size:10px; font-weight:700; letter-spacing:.06em; color:rgba(0,0,0,.55); margin-top:4px; }
+  .ultimo-mag.fuerte{ background:var(--orange); color:#1c1c1e; }
+  .ultimo-mag.muy-fuerte{ background:var(--red); color:#fff; }
+  .ultimo-mag.muy-fuerte small{ color:rgba(255,255,255,.75); }
+  .ultimo-lugar{ font-size:17px; font-weight:600; line-height:1.25; letter-spacing:-.015em; }
+  .ultimo-datos{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+  .ultimo-datos span{ font-size:12px; color:var(--t2); background:rgba(118,118,128,.2); padding:5px 10px; border-radius:20px; }
+  .ultimo-datos b{ color:var(--t1); font-weight:600; }
+  .ultimo-fuente{ margin-top:14px; padding-top:12px; border-top:.5px solid var(--sep); font-size:12px; color:var(--t3); display:flex; justify-content:space-between; gap:8px; }
+  @media (max-width:600px){ .ultimo-grid{ flex-direction:row; align-items:center; } .ultimo-mag{ width:72px; height:72px; font-size:30px; border-radius:20px; } }
+
+  /* Lista iOS */
+  .ios-list{ padding:0; overflow:hidden; }
+  .sismo-item{
+    display:flex; align-items:center; gap:12px; padding:11px 14px; margin:0; border-radius:0;
+    border-bottom:0; cursor:pointer; position:relative; transition:background .15s ease; font-size:inherit;
+  }
+  .sismo-item + .sismo-item::before{ content:""; position:absolute; top:0; left:70px; right:0; border-top:.5px solid var(--sep); }
+  .sismo-item:hover{ background:rgba(255,255,255,.05); transform:none; }
+  .sismo-item:active{ background:rgba(255,255,255,.1); }
+  .mag-badge{
+    flex:0 0 auto; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center;
+    font-size:16px; font-weight:700; letter-spacing:-.02em; color:var(--yellow); background:rgba(255,214,10,.14);
+  }
+  .mag-badge.l2{ color:var(--orange); background:rgba(255,159,10,.16); }
+  .mag-badge.l3{ color:#fff; background:var(--red); }
+  .sismo-info{ flex:1; min-width:0; margin:0; }
+  .sismo-lugar{ font-size:15px; font-weight:500; color:var(--t1); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sismo-meta{ font-size:13px; color:var(--t2); margin-top:2px; display:block; }
+  .chev{ flex:0 0 auto; color:var(--t3); }
+  .ios-more{ margin-top:-2px; }
+  .ios-more > summary{
+    display:flex; justify-content:space-between; align-items:center; gap:10px; padding:13px 16px; cursor:pointer;
+    background:var(--surface); border:.5px solid rgba(255,255,255,.08); border-radius:var(--r-md);
+    font-size:15px; color:var(--blue); font-weight:500; list-style:none; margin:0;
+  }
+  .ios-more > summary::-webkit-details-marker{ display:none; }
+  .ios-more > summary .chev{ transition:transform .2s ease; color:var(--blue); }
+  .ios-more[open] > summary .chev{ transform:rotate(90deg); }
+  .ios-more[open] > summary{ border-radius:var(--r-md) var(--r-md) 0 0; }
+  .ios-more > .ios-list{ border-radius:0 0 var(--r-lg) var(--r-lg); border-top:0; }
+  .lab-more > summary{ color:var(--t1); }
+  .lab-more > summary b{ font-weight:600; }
+  .lab-more > summary .chev{ color:var(--t3); }
+  .lab-body{ padding:14px 0 0; margin:0; }
+
+  /* Formulario tipo Ajustes */
+  .ios-form .ios-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:11px 16px; position:relative; font-size:15px; }
+  .ios-form .ios-row + .ios-row::before{ content:""; position:absolute; top:0; left:16px; right:0; border-top:.5px solid var(--sep); }
+  .ios-form .ios-row > span:first-child{ color:var(--t1); }
+  .ios-form .form-input{
+    width:auto; max-width:62%; background:transparent; border:0; color:var(--t2); font:15px var(--font);
+    text-align:right; padding:0; appearance:none; -webkit-appearance:none; cursor:pointer; text-align-last:right;
+  }
+  .ios-form select.form-input{ padding-right:18px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M1 5l4-4 4 4M1 9l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right center no-repeat; }
+  .ios-form select.form-input option{ background:#1c1c1e; color:#fff; }
+  .switch{ width:51px; height:31px; flex:0 0 auto; }
+  .slider{ background:rgba(120,120,128,.32); border-radius:31px; }
+  .slider::before{ width:27px; height:27px; left:2px; top:2px; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  input:checked + .slider{ background:var(--green); }
+  input:checked + .slider::before{ transform:translateX(20px); }
+  .ios-form .ios-row.advanced-only{ display:none; }
+  body.advanced-mode .ios-form .ios-row.advanced-only{ display:flex; }
+
+  .btn-primary{ background:var(--blue); border-radius:var(--r-md); padding:14px; font:600 15px var(--font); box-shadow:none; }
+  .btn-primary:hover{ transform:none; box-shadow:none; filter:brightness(1.1); }
+  .btn-secondary{
+    background:var(--surface); border:.5px solid rgba(255,255,255,.08); color:var(--blue); border-radius:var(--r-md);
+    padding:14px; font:500 15px var(--font); margin:0;
+  }
+  .progress-steps{ font-size:12px; color:var(--t3); margin:0 4px; }
+  .progress-steps .step.active{ color:var(--blue); }
+  .progress-steps .step.done{ color:var(--green); }
+  .loading{ color:var(--t3); font-size:13px; padding:18px; }
+  .update-line{ font-size:12px; color:var(--t3); }
+  .foot-note{ font-size:12px; color:var(--t3); line-height:1.5; margin:6px 4px 0; }
+  .sources-box{ font-size:13px; color:var(--t2); line-height:1.55; }
+  .sources-box b{ color:var(--t1); font-weight:600; }
+
+  /* Laboratorio: tarjetas del modelo */
+  .lab-body .system-warning-banner{ background:rgba(255,159,10,.10); border:0; border-radius:var(--r-md); color:var(--t2); font-size:13px; box-shadow:none; }
+  .lab-body .system-warning-banner strong{ color:var(--orange); }
+  .forecast-grid{ gap:10px; }
+  .forecast-card{ padding:14px; border-radius:var(--r-md); }
+  .forecast-card:hover{ transform:none; border-color:rgba(255,255,255,.08); box-shadow:none; }
+  .forecast-value{ text-shadow:none; font-weight:700; }
+  .meaning-box{ background:rgba(48,209,88,.08); border:0; border-radius:var(--r-md); color:var(--t2); font-size:13px; }
+  .meaning-box strong{ color:var(--green); }
+  .metric-box{ background:rgba(118,118,128,.14); border:0; border-radius:var(--r-md); }
+
+  /* Leaflet en modo iOS */
+  .leaflet-container{ font-family:var(--font); background:#0d1117; }
+  .leaflet-control-zoom{ border:0 !important; border-radius:12px !important; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.35) !important; }
+  .leaflet-control-zoom a{ background:rgba(28,28,30,.85) !important; color:#fff !important; border-bottom:.5px solid var(--sep) !important; width:38px !important; height:38px !important; line-height:38px !important; -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+  .leaflet-top.leaflet-left{ top:auto; bottom:12px; }
+  .leaflet-top.leaflet-left .leaflet-control{ margin-top:0; }
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:rgba(28,28,30,.92); color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+  .leaflet-popup-content-wrapper{ border-radius:14px; }
+  .leaflet-popup-content{ font-size:13px; line-height:1.45; margin:12px 14px; }
+  .leaflet-container a.leaflet-popup-close-button{ color:var(--t2); }
+  .leaflet-control-attribution{ background:rgba(0,0,0,.45) !important; color:var(--t3) !important; font-size:10px; border-radius:8px 0 0 0; }
+  .leaflet-control-attribution a{ color:var(--t2) !important; }
+  .map-legend{ background:rgba(28,28,30,.78); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border:0; border-radius:12px; padding:8px 12px; font-size:11.5px; color:var(--t2); display:flex; gap:12px; box-shadow:none; }
+  .map-legend .row{ gap:5px; }
+  .legend-dot{ width:9px; height:9px; }
+  .pulse-ring{ position:relative; width:18px; height:18px; }
+  .pulse-ring::before,.pulse-ring::after{ content:""; position:absolute; inset:0; border-radius:50%; border:2px solid var(--c,#FFD60A); animation:ring 2s ease-out infinite; }
+  .pulse-ring::after{ animation-delay:1s; }
+
+  /* Clima y ciclones: ajustes al sistema */
+  .info-banner{ background:var(--surface); border:.5px solid rgba(255,255,255,.08); border-radius:var(--r-md); color:var(--t2); font-size:13px; }
+  .info-banner strong{ color:var(--t1); }
+  .weather-hero{ border-radius:var(--r-lg); box-shadow:none; }
+  .clima-card:hover{ transform:none; }
+  .clima-card.selected{ box-shadow:0 0 0 2px var(--blue) inset; border-color:transparent; }
+  .clima-day{ background:rgba(118,118,128,.14); border:0; }
+  .widget-title{ text-transform:none; font-size:12px; font-weight:600; color:var(--t2); letter-spacing:0; }
+  .tab-panel{ animation:fadein .25s ease; }
+  @keyframes fadein{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
 </style>
 </head>
 <body>
 
 <div class="container">
   <!-- Encabezado -->
-  <div class="header">
-    <div>
-      <h1 class="brand">SismoPro <span>RD</span></h1>
-      <p class="tagline">Monitoreo sísmico y alertas para República Dominicana y el Caribe</p>
+  <header class="header">
+    <div class="brand-wrap">
+      <svg class="brand-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#FF453A"/><path d="M4 17h5l3-8 4 15 3-11 2 4h7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div>
+        <h1 class="brand">SismoPro <span>RD</span></h1>
+        <p class="tagline">Monitoreo sísmico y alertas · Caribe</p>
+      </div>
     </div>
+    <nav class="tabs" aria-label="Secciones">
+      <button class="tab-btn active" data-tab="sismos"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M2 12h4l2.5-6 4 13 3-10 1.8 3H22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Sismos</span></button>
+      <button class="tab-btn" data-tab="clima"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M7 15a4 4 0 1 1 .9-7.9A5.5 5.5 0 0 1 18.5 9 3.5 3.5 0 0 1 18 16H7.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 19l-1 2M12 19l-1 2M16 19l-1 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Clima</span></button>
+      <button class="tab-btn" data-tab="ciclones"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3.5c-4 0-6.5 2.5-7 5.5M12 20.5c4 0 6.5-2.5 7-5.5M20.5 12c0-4-2.5-6.5-5.5-7M3.5 12c0 4 2.5 6.5 5.5 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Ciclones</span></button>
+    </nav>
     <div class="badge-live" id="status-badge">
       <span class="dot"></span> <span id="status-text">Conectando…</span>
     </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" data-tab="sismos">🌍 Sismos</button>
-    <button class="tab-btn" data-tab="clima">🌦️ Clima y lluvia</button>
-    <button class="tab-btn" data-tab="ciclones">🌀 Ciclones</button>
-  </div>
+  </header>
 
   <!-- ============ TAB: SISMOS ============ -->
   <div class="tab-panel active" id="tab-sismos">
+    <div class="sp-layout">
 
-    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-      <span class="update-line" id="update-line">Cargando datos…</span>
-      <div class="view-toggle">
-        Vista sencilla
-        <label class="switch"><input type="checkbox" id="toggle-advanced"><span class="slider"></span></label>
-        Vista avanzada
-      </div>
-    </div>
-
-    <div class="dashboard-grid">
-      <div class="col-main">
-
-        <!-- Estado sísmico -->
-        <div class="estado-card estado-cargando" id="estado-card">
-          <div class="estado-icono" id="estado-icono">⏳</div>
-          <div>
-            <div class="estado-label">Estado sísmico · <span id="estado-zona">250 km de Santo Domingo</span></div>
-            <div class="estado-titulo" id="estado-titulo">Consultando…</div>
-            <div class="estado-detalle" id="estado-detalle">Revisando los sismos de las últimas 24 horas.</div>
-          </div>
-        </div>
-
-        <!-- Último sismo -->
-        <div class="card ultimo-card">
-          <div class="card-header"><span>📍 Último sismo detectado</span><span style="font-size:10px; color:#64748b;" id="ultimo-hace"></span></div>
-          <div id="ultimo-sismo"><div class="loading">Sincronizando con el catálogo sísmico…</div></div>
-        </div>
-
-        <!-- Mapa -->
-        <div class="card">
-          <div class="card-header">
-            <span>🗺️ Mapa sísmico interactivo</span>
-            <span style="font-size: 10px; color: #64748b;" id="radio-label">Radio analizado: 250 km desde Santo Domingo</span>
-          </div>
+      <!-- Columna mapa -->
+      <section class="sp-map-col">
+        <div class="map-wrap">
           <div id="map"></div>
-          <div class="map-summary" id="map-summary">Cargando eventos…</div>
-        </div>
-
-        <!-- Sismos Recientes -->
-        <div class="card">
-          <div class="card-header" style="margin-bottom:0;">
-            <span>⚡ Sismos recientes — Fuente: USGS/ANSS</span>
-            <span class="today-badge" id="today-badge" style="display:none;"></span>
-          </div>
-          <details id="sismos-details" class="acordeon">
-            <summary class="sismos-summary ver-mas">
-              <span id="total-badge">Cargando…</span>
-              <span class="accordion-chevron">▾</span>
-            </summary>
-            <div id="lista-sismos">
-              <div class="loading">Sincronizando con el catálogo sísmico…</div>
+          <div class="estado-card estado-cargando" id="estado-card">
+            <span class="estado-icono" id="estado-icono"></span>
+            <div class="estado-txt">
+              <div class="estado-label">Estado sísmico · <span id="estado-zona">250 km de Santo Domingo</span></div>
+              <div class="estado-titulo" id="estado-titulo">Consultando…</div>
+              <div class="estado-detalle" id="estado-detalle">Revisando los sismos de las últimas 24 horas.</div>
             </div>
-          </details>
+          </div>
         </div>
+        <div class="map-meta">
+          <span id="map-summary">Cargando eventos…</span>
+          <span class="update-line" id="update-line">Cargando datos…</span>
+        </div>
+      </section>
 
-        <!-- Laboratorio -->
-        <div class="card lab-card">
-          <details id="lab-details" class="acordeon">
-            <summary class="card-header sismos-summary" style="margin-bottom:0;">
-              <span>🧪 Laboratorio SismoPro · Análisis experimental</span>
-              <span class="accordion-chevron">▾</span>
-            </summary>
-            <div class="lab-body">
+      <!-- Panel -->
+      <section class="sp-panel">
+
+        <div class="section-head"><h2>Último sismo</h2><span class="section-aside" id="ultimo-hace"></span></div>
+        <div class="glass ultimo-card"><div id="ultimo-sismo"><div class="loading">Sincronizando con el catálogo sísmico…</div></div></div>
+
+        <div class="section-head"><h2>Recientes</h2><span class="today-badge" id="today-badge" style="display:none;"></span></div>
+        <div class="ios-list" id="lista-top"><div class="loading">Cargando…</div></div>
+        <details id="sismos-details" class="ios-more">
+          <summary class="sismos-summary"><span id="total-badge">Cargando…</span><svg class="chev" viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+          <div class="ios-list" id="lista-sismos"></div>
+        </details>
+
+        <div class="section-head"><h2>Zona analizada</h2></div>
+        <div class="ios-list ios-form">
+          <label class="ios-row"><span>Centro</span><select class="form-input" id="sel-centro"></select></label>
+          <label class="ios-row"><span>Radio</span>
+            <select class="form-input" id="sel-radio">
+              <option value="100">100 km</option>
+              <option value="250" selected>250 km</option>
+              <option value="500">500 km</option>
+            </select></label>
+          <label class="ios-row"><span>Historial</span>
+            <select class="form-input" id="sel-anios">
+              <option value="1">Último año</option>
+              <option value="5">5 años</option>
+              <option value="10" selected>10 años</option>
+              <option value="20">20 años</option>
+            </select></label>
+          <div class="ios-row advanced-only"><span>Coordenadas</span><input type="text" class="form-input" id="txt-coords" value="18.4861, -69.9312" readonly></div>
+          <div class="ios-row advanced-only"><span>Mc</span><input type="text" class="form-input" value="3.0 Mw (automática)" readonly></div>
+          <label class="ios-row"><span>Datos técnicos</span><span class="switch"><input type="checkbox" id="toggle-advanced"><span class="slider"></span></span></label>
+        </div>
+        <button class="btn-primary" id="btn-recalcular" hidden>Actualizar estimación</button>
+        <div class="progress-steps" id="progress-steps">
+          <div class="step" data-step="1">Consultando catálogo sísmico (USGS/ANSS)…</div>
+          <div class="step" data-step="2">Comprobando calidad de los datos…</div>
+          <div class="step" data-step="3">Calculando…</div>
+          <div class="step" data-step="4">Actualización completada.</div>
+        </div>
+        <button class="btn-secondary" id="btn-notify">Avisarme de sismos M≥4.0 (mientras la app esté abierta)</button>
+
+        <details id="lab-details" class="ios-more lab-more">
+          <summary class="sismos-summary"><span><b>Laboratorio SismoPro</b> · Análisis experimental</span><svg class="chev" viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></summary>
+          <div class="lab-body">
             <div class="system-warning-banner">
       <strong>⚠️ Esta plataforma no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Nadie puede hacerlo hoy en día. Los porcentajes de esta sección estiman la posibilidad estadística de que se registre <em>al menos un sismo</em> de cierta magnitud, en algún punto dentro de <span id="ctx-radius-banner">250&nbsp;km de Santo Domingo</span>. Esto no equivale al riesgo de daños ni indica que el sismo vaya a sentirse en la ciudad.
     </div>
@@ -532,55 +780,10 @@
         </div>
 
             </div>
-          </details>
-        </div>
-
-      </div>
-
-      <div class="col-sidebar">
-        <div class="card">
-          <div class="card-header">⚙️ Área analizada</div>
-          <div class="form-group">
-            <label class="form-label">Centro del análisis</label>
-            <select class="form-input" id="sel-centro"></select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Área analizada</label>
-            <select class="form-input" id="sel-radio">
-              <option value="100">100 km a la redonda</option>
-              <option value="250" selected>250 km a la redonda</option>
-              <option value="500">500 km a la redonda</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Datos históricos usados</label>
-            <select class="form-input" id="sel-anios">
-              <option value="1">Último año</option>
-              <option value="5">Últimos 5 años</option>
-              <option value="10" selected>Últimos 10 años</option>
-              <option value="20">Últimos 20 años</option>
-            </select>
-          </div>
-          <div class="form-group advanced-only">
-            <label class="form-label">Coordenadas del centro</label>
-            <input type="text" class="form-input" id="txt-coords" value="18.4861, -69.9312" readonly>
-          </div>
-          <div class="form-group advanced-only">
-            <label class="form-label">Magnitud de completitud (Mc)</label>
-            <input type="text" class="form-input" value="3.0 Mw (seleccionada automáticamente)" readonly>
-          </div>
-          <button class="btn-primary" id="btn-recalcular">Actualizar estimación</button>
-          <div class="progress-steps" id="progress-steps">
-            <div class="step" data-step="1">① Consultando catálogo sísmico (USGS/ANSS)…</div>
-            <div class="step" data-step="2">② Comprobando calidad de los datos…</div>
-            <div class="step" data-step="3">③ Calculando probabilidades…</div>
-            <div class="step" data-step="4">④ Actualización completada.</div>
-          </div>
-          <button class="btn-secondary" id="btn-notify">🔔 Avisarme de sismos M≥4.0 (mientras la app esté abierta)</button>
-        </div>
+        </details>
 
         <div class="card advanced-only">
-          <div class="card-header">📊 Validación retrospectiva (experimental)</div>
+          <div class="card-header">Validación retrospectiva (experimental)</div>
           <div class="metrics-grid">
             <div class="metric-box">
               <div class="metric-title">Valor b (Gutenberg–Richter)</div>
@@ -599,7 +802,7 @@
         </div>
 
         <div class="card">
-          <div class="card-header">📚 Fuentes y responsabilidad</div>
+          <div class="card-header">Fuentes y responsabilidad</div>
           <div class="sources-box">
             <p><b>Datos sísmicos:</b> USGS/ANSS ComCat. No implica respaldo ni validación del USGS al modelo probabilístico.</p>
             <p><b>Modelo probabilístico:</b> desarrollado por SismoPro RD (Bayes–Poisson + Gutenberg–Richter).</p>
@@ -615,10 +818,8 @@
           </details>
         </div>
 
-        <div class="disclaimer">
-          <strong>⚠️ Nota:</strong> herramienta informativa y educativa. No determina el día, la hora ni el lugar exacto de un futuro terremoto. Los resultados pueden cambiar al incorporar nuevos datos.
-        </div>
-      </div>
+        <p class="foot-note">Herramienta informativa y educativa. No determina el día, la hora ni el lugar de un futuro terremoto y no sustituye los comunicados de la Defensa Civil ni del COE.</p>
+      </section>
     </div>
   </div>
 
@@ -968,13 +1169,13 @@
   }).addTo(map);
 
   let centerCircle = L.circle([SD.lat, SD.lon], {
-    radius: RADIUS_KM*1000, color:"#3b82f6", weight:1.5, dashArray:"4 6", fillColor:"#3b82f6", fillOpacity:0.03
+    radius: RADIUS_KM*1000, color:"#0A84FF", weight:1.5, dashArray:"4 6", fillColor:"#0A84FF", fillOpacity:0.04
   }).addTo(map);
 
   let centerMarker = L.marker([SD.lat, SD.lon], {
     icon: L.divIcon({
       className: "",
-      html: '<div style="background:#3b82f6;width:12px;height:12px;border-radius:50%;border:2px solid white;box-shadow:0 0 8px #3b82f6;"></div>',
+      html: '<div style="background:#0A84FF;width:14px;height:14px;border-radius:50%;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);"></div>',
       iconSize:[12,12]
     })
   }).addTo(map).bindPopup("<b>" + SD.name + "</b><br>Centro del análisis");
@@ -991,10 +1192,9 @@
     const box = document.getElementById("map-legend-box");
     if(!box) return;
     box.innerHTML =
-      '<div class="row"><span class="legend-dot" style="background:#3b82f6"></span> ' + SD.name + ' (centro)</div>' +
-      '<div class="row"><span class="legend-dot" style="background:#fbbf24"></span> Sismo M &lt; 4.0</div>' +
-      '<div class="row"><span class="legend-dot" style="background:#ef4444"></span> Sismo M ≥ 4.0</div>' +
-      '<div class="row">⭕ Radio de ' + RADIUS_KM + ' km analizado</div>';
+      '<div class="row"><span class="legend-dot" style="background:#FFD60A"></span>M&lt;4</div>' +
+      '<div class="row"><span class="legend-dot" style="background:#FF9F0A"></span>M4–4.9</div>' +
+      '<div class="row"><span class="legend-dot" style="background:#FF453A"></span>M5+</div>';
   }
   renderLegend();
 
@@ -1158,6 +1358,12 @@
     if(h < 48) return "hace " + h + (h===1 ? " hora" : " horas");
     return "hace " + Math.round(h/24) + " días";
   }
+  function magColor(m){ return m >= 5 ? "#FF453A" : (m >= 4 ? "#FF9F0A" : "#FFD60A"); }
+  function magNivel(m){ return m >= 5 ? "l3" : (m >= 4 ? "l2" : "l1"); }
+  function horaCorta(ms){
+    return new Intl.DateTimeFormat("es-DO", { timeZone:"America/Santo_Domingo", day:"numeric", month:"short", hour:"numeric", minute:"2-digit" }).format(new Date(ms));
+  }
+  function cuandoCorto(ms){ return (Date.now()-ms) < 48*3600*1000 ? haceCuanto(ms) : horaCorta(ms); }
   function renderEstadoYUltimo(events, ultimo){
     const card = document.getElementById("estado-card");
     const ult24 = events.filter(function(e){ return Date.now()-e.time < 24*3600*1000; });
@@ -1165,16 +1371,16 @@
     document.getElementById("estado-zona").textContent = RADIUS_KM + " km de " + SD.name;
     let clase, icono, titulo, detalle;
     if(ult24.length === 0){
-      clase="estado-normal"; icono="✅"; titulo="Sin sismos en las últimas 24 horas";
+      clase="estado-normal"; icono=""; titulo="Sin sismos en las últimas 24 horas";
       detalle="No se han registrado sismos de magnitud " + MC.toFixed(1) + " o mayor en la zona.";
     } else if(maxMag < 4){
-      clase="estado-normal"; icono="✅"; titulo="Actividad habitual";
+      clase="estado-normal"; icono=""; titulo="Actividad habitual";
       detalle=ult24.length + (ult24.length===1 ? " sismo menor" : " sismos menores") + " en las últimas 24 horas (máximo M " + maxMag.toFixed(1) + "). Normalmente no se sienten o se sienten muy leve.";
     } else if(maxMag < 5){
-      clase="estado-moderado"; icono="⚠️"; titulo="Actividad moderada";
+      clase="estado-moderado"; icono=""; titulo="Actividad moderada";
       detalle="Se registró un sismo de M " + maxMag.toFixed(1) + " en las últimas 24 horas. Pudo sentirse cerca del epicentro; no suele causar daños.";
     } else {
-      clase="estado-alto"; icono="🔴"; titulo="Sismo fuerte reciente";
+      clase="estado-alto"; icono=""; titulo="Sismo fuerte reciente";
       detalle="Se registró un sismo de M " + maxMag.toFixed(1) + " en las últimas 24 horas. Sigue las indicaciones de la Defensa Civil y el COE.";
     }
     card.className = "estado-card " + clase;
@@ -1190,32 +1396,36 @@
     }
     document.getElementById("ultimo-hace").textContent = haceCuanto(ultimo.time);
     const dist = Math.round(distanciaKm(SD.lat, SD.lon, ultimo.lat, ultimo.lon));
+    const nivel = ultimo.mag >= 5 ? ' muy-fuerte' : (ultimo.mag >= 4 ? ' fuerte' : '');
     cont.innerHTML =
       '<div class="ultimo-grid">' +
-        '<div class="ultimo-mag' + (ultimo.mag >= 4 ? ' fuerte' : '') + '">' + ultimo.mag.toFixed(1) + '<small>MAGNITUD</small></div>' +
-        '<div>' +
+        '<div class="ultimo-mag' + nivel + '">' + ultimo.mag.toFixed(1) + '<small>MAG</small></div>' +
+        '<div style="min-width:0">' +
           '<div class="ultimo-lugar">' + translatePlace(ultimo.place) + '</div>' +
           '<div class="ultimo-datos">' +
-            '<span>🕒 <b>' + toRDTime(ultimo.time) + '</b></span>' +
-            '<span>⬇️ Profundidad: <b>' + (ultimo.depth!=null ? Math.round(ultimo.depth) + ' km' : 'N/D') + '</b></span>' +
-            '<span>📏 A <b>' + dist + ' km</b> de ' + SD.name + '</span>' +
-            '<span>✔️ ' + statusLabel(ultimo.status) + '</span>' +
+            '<span><b>' + horaCorta(ultimo.time) + '</b> hora RD</span>' +
+            '<span>Prof. <b>' + (ultimo.depth!=null ? Math.round(ultimo.depth) + ' km' : 'N/D') + '</b></span>' +
+            '<span>A <b>' + dist + ' km</b> de ' + SD.name + '</span>' +
           '</div>' +
         '</div>' +
       '</div>' +
-      '<div class="ultimo-fuente">Fuente: USGS/ANSS' + (ultimo.url ? ' · <a href="' + ultimo.url + '" target="_blank" rel="noopener">Ver ficha del evento</a>' : '') + '</div>';
+      '<div class="ultimo-fuente"><span>USGS/ANSS · ' + statusLabel(ultimo.status) + '</span>' +
+      (ultimo.url ? '<a href="' + ultimo.url + '" target="_blank" rel="noopener">Ver ficha ›</a>' : '') + '</div>';
   }
 
   function renderMapAndList(events){
     clearMarkers();
     const contenedor = document.getElementById("lista-sismos");
+    const listaTop = document.getElementById("lista-top");
+    listaTop.innerHTML = "";
     const totalBadge = document.getElementById("total-badge");
     contenedor.innerHTML = "";
 
     const recientes = events.slice().sort(function(a,b){return b.time-a.time;}).slice(0,25);
-    totalBadge.textContent = recientes.length > 1
-      ? "Ver los " + (recientes.length - 1) + " sismos anteriores"
-      : "No hay sismos anteriores en esta área";
+    const VISIBLES = 5;
+    const restantes = Math.max(0, recientes.length - 1 - VISIBLES);
+    totalBadge.textContent = restantes > 0 ? "Ver " + restantes + " sismos más" : "No hay más sismos recientes";
+    document.getElementById("sismos-details").style.display = restantes > 0 ? "" : "none";
     renderEstadoYUltimo(events, recientes[0]);
 
     const hoyRD = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santo_Domingo" }).format(new Date());
@@ -1233,45 +1443,44 @@
       "Se encontraron " + events.length + " sismos de magnitud " + MC + " o mayor dentro de " + RADIUS_KM + " km de " + SD.name + ", en los últimos " + HISTORY_YEARS + " años.";
 
     if(recientes.length === 0){
-      contenedor.innerHTML = '<div class="loading">No hay sismos registrados recientemente en esta área.</div>';
+      listaTop.innerHTML = '<div class="loading">No hay sismos registrados recientemente en esta área.</div>';
       return;
     }
 
     recientes.forEach(function(sismo, idx){
-      const esFuerte = sismo.mag >= 4.0;
-      const claseMag = esFuerte ? "mag-pill" : "mag-pill moderate";
-      const color = esFuerte ? "#ef4444" : "#fbbf24";
-
+      const color = magColor(sismo.mag);
       const marker = L.circleMarker([sismo.lat, sismo.lon], {
-        radius: Math.max(4, sismo.mag*2.2),
-        color: color, fillColor: color, fillOpacity: 0.7, weight:1
+        radius: Math.max(5, sismo.mag*2.6),
+        color: "rgba(0,0,0,.55)", weight: 1, fillColor: color, fillOpacity: 0.85
       }).addTo(map).bindPopup(
-        "<b>Magnitud " + sismo.mag.toFixed(1) + "</b><br>" +
-        translatePlace(sismo.place) + "<br>" +
-        "Profundidad: " + (sismo.depth!=null ? Math.round(sismo.depth)+" km" : "N/D") + "<br>" +
-        toRDTime(sismo.time) + "<br>" +
-        statusLabel(sismo.status)
+        "<b>M " + sismo.mag.toFixed(1) + "</b> · " + translatePlace(sismo.place) + "<br>" +
+        '<span style="color:rgba(235,235,245,.62)">' + horaCorta(sismo.time) + " · Prof. " +
+        (sismo.depth!=null ? Math.round(sismo.depth)+" km" : "N/D") + "</span>"
       );
       markers.push(marker);
-      if(idx === 0) return; // el más reciente ya se muestra en "Último sismo detectado"
+      if(idx === 0){
+        const pulso = L.marker([sismo.lat, sismo.lon], { interactive:false,
+          icon: L.divIcon({ className:"", html:'<div class="pulse-ring" style="--c:' + color + '"></div>', iconSize:[18,18], iconAnchor:[9,9] })
+        }).addTo(map);
+        markers.push(pulso);
+        return; // el más reciente se muestra en "Último sismo"
+      }
 
       const item = document.createElement("div");
       item.className = "sismo-item";
       item.innerHTML =
-        '<div class="'+claseMag+'">M '+sismo.mag.toFixed(1)+'</div>' +
+        '<div class="mag-badge ' + magNivel(sismo.mag) + '">' + sismo.mag.toFixed(1) + '</div>' +
         '<div class="sismo-info">' +
-          '<div class="sismo-lugar">'+translatePlace(sismo.place)+'</div>' +
-          '<div class="sismo-meta">' +
-            '<span>📅 '+toRDTime(sismo.time)+'</span>' +
-            '<span>⬇️ '+(sismo.depth!=null ? Math.round(sismo.depth)+' km de profundidad' : 'profundidad N/D')+'</span>' +
-            '<span>✔️ '+statusLabel(sismo.status)+'</span>' +
-          '</div>' +
-        '</div>';
+          '<div class="sismo-lugar">' + translatePlace(sismo.place).replace(/,\s*República Dominicana$/, "") + '</div>' +
+          '<div class="sismo-meta">' + cuandoCorto(sismo.time) + ' · ' + (sismo.depth!=null ? Math.round(sismo.depth)+' km prof.' : 'prof. N/D') + '</div>' +
+        '</div>' +
+        '<svg class="chev" viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       item.addEventListener("click", function(){
+        if(window.innerWidth <= 900) document.getElementById("map").scrollIntoView({ behavior:"smooth", block:"center" });
         map.flyTo([sismo.lat, sismo.lon], 9, { duration: 1.2 });
         marker.openPopup();
       });
-      contenedor.appendChild(item);
+      (idx <= VISIBLES ? listaTop : contenedor).appendChild(item);
     });
   }
 
@@ -1311,15 +1520,18 @@
     const c = CITIES[parseInt(e.target.value, 10)];
     SD = { lat: c.lat, lon: c.lon, name: c.name };
     updateCenterOverlay();
+    cargarSismos();
   });
 
   document.getElementById("sel-radio").addEventListener("change", function(e){
     RADIUS_KM = parseInt(e.target.value, 10);
     updateCenterOverlay();
+    cargarSismos();
   });
 
   document.getElementById("sel-anios").addEventListener("change", function(e){
     HISTORY_YEARS = parseInt(e.target.value, 10);
+    cargarSismos();
   });
 
   document.querySelectorAll(".tab-btn").forEach(function(btn){
@@ -1342,6 +1554,7 @@
     }
   });
 
+  window.addEventListener("resize", function(){ map.invalidateSize(); });
   document.getElementById("btn-recalcular").addEventListener("click", function(){
     cargarSismos();
   });
