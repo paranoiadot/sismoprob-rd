@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SismoPro RD - Monitoreo sísmico y alertas del Caribe</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#050d22">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="Monitoreo sísmico en tiempo real, clima y seguimiento de ciclones para República Dominicana.">
@@ -399,9 +399,9 @@
      Va al final del <style> para sobrescribir estilos previos.
   ========================================================== */
   :root{
-    --bg:#000; --bg-elev:#0b0b0f;
-    --surface:rgba(28,28,30,.72); --surface-solid:#1c1c1e; --surface-2:#2c2c2e;
-    --sep:rgba(84,84,88,.45);
+    --bg:#040b1c; --bg-elev:#0a1430;
+    --surface:rgba(20,32,60,.55); --surface-solid:#111d3a; --surface-2:#1a2a4d;
+    --sep:rgba(120,140,190,.22);
     --t1:#fff; --t2:rgba(235,235,245,.62); --t3:rgba(235,235,245,.32);
     --blue:#0A84FF; --green:#30D158; --yellow:#FFD60A; --orange:#FF9F0A; --red:#FF453A;
     --r-lg:22px; --r-md:14px;
@@ -411,8 +411,9 @@
   html{ background:var(--bg); }
   body{
     font-family:var(--font); background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(10,132,255,.10), transparent 60%),
-      radial-gradient(900px 500px at -10% 10%, rgba(255,69,58,.07), transparent 60%), var(--bg);
+      radial-gradient(1200px 700px at 85% -10%, rgba(10,132,255,.22), transparent 60%),
+      radial-gradient(900px 600px at -10% 20%, rgba(64,90,200,.18), transparent 60%),
+      linear-gradient(180deg, #071431 0%, #050d22 45%, #030817 100%);
     background-attachment:fixed; color:var(--t1); padding:0; display:block;
     -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
   }
@@ -429,7 +430,7 @@
   .header{
     position:sticky; top:0; z-index:1000; margin:0 -20px 18px; padding:14px 20px;
     display:flex; align-items:center; justify-content:space-between; gap:16px;
-    background:rgba(0,0,0,.6); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+    background:rgba(5,13,34,.62); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
     border:0; border-bottom:.5px solid var(--sep); border-radius:0; box-shadow:none; flex-wrap:nowrap;
   }
   .brand-wrap{ display:flex; align-items:center; gap:10px; min-width:0; }
@@ -448,7 +449,7 @@
   }
   .tab-btn svg{ width:17px; height:17px; }
   .tab-btn:hover{ color:var(--t1); background:rgba(255,255,255,.06); }
-  .tab-btn.active{ background:#636366; color:#fff; box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  .tab-btn.active{ background:rgba(10,132,255,.55); color:#fff; box-shadow:0 3px 8px rgba(0,0,0,.25); }
   .badge-live{
     background:rgba(48,209,88,.14); color:var(--green); border:0; box-shadow:none;
     padding:6px 12px; font-size:12px; font-weight:600; white-space:nowrap;
@@ -457,12 +458,12 @@
 
   @media (max-width:760px){
     .container{ padding:0 14px calc(96px + env(safe-area-inset-bottom)); }
-    .header{ margin:0 -14px 14px; padding:12px 14px; -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(0,0,0,.88); }
+    .header{ margin:0 -14px 14px; padding:12px 14px; -webkit-backdrop-filter:none; backdrop-filter:none; background:rgba(5,13,34,.92); }
     .tagline{ display:none; }
     .tabs{
       position:fixed; left:0; right:0; bottom:0; z-index:2000; display:grid; grid-template-columns:repeat(3,1fr);
       padding:6px 8px calc(6px + env(safe-area-inset-bottom)); border-radius:0; gap:0;
-      background:rgba(18,18,20,.82); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
+      background:rgba(6,15,38,.88); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur);
       border-top:.5px solid var(--sep);
     }
     .tab-btn{ flex-direction:column; gap:3px; padding:6px 0; font-size:10.5px; font-weight:500; color:rgba(235,235,245,.5); border-radius:0; }
@@ -475,7 +476,7 @@
   .sp-map-col{ position:sticky; top:84px; }
   .sp-panel{ display:flex; flex-direction:column; gap:12px; min-width:0; }
   .map-wrap{ position:relative; border-radius:var(--r-lg); overflow:hidden; border:.5px solid rgba(255,255,255,.08); }
-  #map{ height:calc(100vh - 150px); min-height:460px; border:0; border-radius:0; box-shadow:none; background:#0d1117; }
+  #map{ height:calc(100vh - 150px); min-height:460px; border:0; border-radius:0; box-shadow:none; background:#0b1630; }
   .map-meta{ display:flex; justify-content:space-between; gap:12px; margin-top:10px; font-size:12px; color:var(--t3); }
   .map-meta #map-summary{ color:var(--t3); font-size:12px; margin:0; }
   @media (max-width:900px){
@@ -489,14 +490,14 @@
   .estado-card{
     position:absolute; z-index:500; top:12px; left:12px; right:12px; max-width:440px;
     display:flex; align-items:flex-start; gap:12px; padding:12px 14px; margin:0; border-radius:18px;
-    background:rgba(22,22,24,.72);
+    background:rgba(8,18,44,.72);
   }
   .estado-icono{ flex:0 0 auto; width:12px; height:12px; margin-top:5px; border-radius:50%; background:var(--t3); font-size:0; position:relative; }
   .estado-icono::after{ content:""; position:absolute; inset:-5px; border-radius:50%; border:2px solid currentColor; opacity:0; animation:ring 2.4s ease-out infinite; }
   .estado-normal .estado-icono{ background:var(--green); color:var(--green); }
   .estado-moderado .estado-icono{ background:var(--orange); color:var(--orange); }
   .estado-alto .estado-icono{ background:var(--red); color:var(--red); }
-  .estado-normal,.estado-moderado,.estado-alto{ background:rgba(22,22,24,.72); border-color:rgba(255,255,255,.08); }
+  .estado-normal,.estado-moderado,.estado-alto{ background:rgba(8,18,44,.72); border-color:rgba(255,255,255,.08); }
   .estado-alto{ box-shadow:0 0 0 1px rgba(255,69,58,.6), 0 10px 40px rgba(255,69,58,.25); }
   .estado-label{ font-size:11px; font-weight:600; color:var(--t2); text-transform:none; letter-spacing:0; }
   .estado-titulo{ font-size:17px; font-weight:700; margin-top:1px; letter-spacing:-.02em; }
@@ -573,7 +574,7 @@
     text-align:right; padding:0; appearance:none; -webkit-appearance:none; cursor:pointer; text-align-last:right;
   }
   .ios-form select.form-input{ padding-right:18px; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M1 5l4-4 4 4M1 9l4 4 4-4' fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right center no-repeat; }
-  .ios-form select.form-input option{ background:#1c1c1e; color:#fff; }
+  .ios-form select.form-input option{ background:#111d3a; color:#fff; }
   .switch{ width:51px; height:31px; flex:0 0 auto; }
   .slider{ background:rgba(120,120,128,.32); border-radius:31px; }
   .slider::before{ width:27px; height:27px; left:2px; top:2px; box-shadow:0 3px 8px rgba(0,0,0,.25); }
@@ -609,18 +610,18 @@
   .metric-box{ background:rgba(118,118,128,.14); border:0; border-radius:var(--r-md); }
 
   /* Leaflet en modo iOS */
-  .leaflet-container{ font-family:var(--font); background:#0d1117; }
+  .leaflet-container{ font-family:var(--font); background:#0b1630; }
   .leaflet-control-zoom{ border:0 !important; border-radius:12px !important; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,.35) !important; }
-  .leaflet-control-zoom a{ background:rgba(28,28,30,.85) !important; color:#fff !important; border-bottom:.5px solid var(--sep) !important; width:38px !important; height:38px !important; line-height:38px !important; -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+  .leaflet-control-zoom a{ background:rgba(12,24,52,.85) !important; color:#fff !important; border-bottom:.5px solid var(--sep) !important; width:38px !important; height:38px !important; line-height:38px !important; -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
   .leaflet-top.leaflet-left{ top:auto; bottom:12px; }
   .leaflet-top.leaflet-left .leaflet-control{ margin-top:0; }
-  .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:rgba(28,28,30,.92); color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{ background:rgba(12,24,52,.94); color:#fff; box-shadow:0 10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); }
   .leaflet-popup-content-wrapper{ border-radius:14px; }
   .leaflet-popup-content{ font-size:13px; line-height:1.45; margin:12px 14px; }
   .leaflet-container a.leaflet-popup-close-button{ color:var(--t2); }
   .leaflet-control-attribution{ background:rgba(0,0,0,.45) !important; color:var(--t3) !important; font-size:10px; border-radius:8px 0 0 0; }
   .leaflet-control-attribution a{ color:var(--t2) !important; }
-  .map-legend{ background:rgba(28,28,30,.78); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border:0; border-radius:12px; padding:8px 12px; font-size:11.5px; color:var(--t2); display:flex; gap:12px; box-shadow:none; }
+  .map-legend{ background:rgba(12,24,52,.78); -webkit-backdrop-filter:var(--blur); backdrop-filter:var(--blur); border:0; border-radius:12px; padding:8px 12px; font-size:11.5px; color:var(--t2); display:flex; gap:12px; box-shadow:none; }
   .map-legend .row{ gap:5px; }
   .legend-dot{ width:9px; height:9px; }
   .pulse-ring{ position:relative; width:18px; height:18px; }
@@ -687,6 +688,10 @@
   .season-badge.off{ background:rgba(118,118,128,.2); color:var(--t2); border:0; }
   .ciclon-imgs figure img{ border-radius:var(--r-md); }
   .ciclon-imgs figcaption{ color:var(--t2); font-size:12px; }
+  /* Selector de alcance */
+  .alcance{ display:grid; grid-template-columns:1fr 1fr; padding:3px; gap:2px; background:rgba(120,140,190,.16); border-radius:11px; }
+  .alc-btn{ border:0; background:transparent; color:var(--t1); font:600 13px var(--font); padding:8px 6px; border-radius:9px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .alc-btn.active{ background:rgba(10,132,255,.55); box-shadow:0 3px 8px rgba(0,0,0,.25); }
 </style>
 </head>
 <body>
@@ -736,6 +741,11 @@
 
       <!-- Panel -->
       <section class="sp-panel">
+
+        <div class="alcance" role="tablist" aria-label="Alcance">
+          <button class="alc-btn active" data-alcance="caribe" role="tab">Todo el Caribe</button>
+          <button class="alc-btn" data-alcance="zona" role="tab" id="alc-zona-btn">Cerca de Santo Domingo</button>
+        </div>
 
         <div class="section-head"><h2>Último sismo</h2><span class="section-aside" id="ultimo-hace"></span></div>
         <div class="glass ultimo-card"><div id="ultimo-sismo"><div class="loading">Sincronizando con el catálogo sísmico…</div></div></div>
@@ -986,6 +996,10 @@
   ============================================================ */
   let SD = { lat: 18.4861, lon: -69.9312, name: "Santo Domingo" };
   let RADIUS_KM = 250;
+  // Cobertura regional confirmada: Caribe (lat 9–24 N, lon −88 a −59)
+  const CARIBE = { minlat: 9, maxlat: 24, minlon: -88, maxlon: -59, dias: 30 };
+  let ALCANCE = "caribe";   // "caribe" | "zona"
+  let zonaEvents = [], caribeEvents = [];
   let HISTORY_YEARS = 10;
   const MC = 3.0; // magnitud de completitud del catálogo (asumida para esta región)
   const REFRESH_MS = 5 * 60 * 1000; // 5 minutos
@@ -1220,6 +1234,7 @@
      MAPA
   ============================================================ */
   const map = L.map("map").setView([SD.lat, SD.lon], 6);
+  map.fitBounds([[9, -88],[24, -59]]);
   // Teselas de OpenStreetMap (sin API key). Se oscurecen con CSS (.mapa-oscuro)
   // para mantener el estilo dark; CARTO empezó a exigir API key.
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -1258,7 +1273,7 @@
   renderLegend();
 
   function updateCenterOverlay(){
-    map.setView([SD.lat, SD.lon], map.getZoom());
+    if(ALCANCE === "zona") map.setView([SD.lat, SD.lon], map.getZoom());
     centerCircle.setLatLng([SD.lat, SD.lon]);
     centerCircle.setRadius(RADIUS_KM*1000);
     centerMarker.setLatLng([SD.lat, SD.lon]);
@@ -1322,12 +1337,19 @@
         + "&starttime=" + startStr
         + "&orderby=time";
 
-      const res = await fetch(url);
-      if(!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
+      const iniCaribe = new Date(Date.now() - CARIBE.dias*24*3600*1000).toISOString().slice(0,10);
+      const urlCaribe = "https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson"
+        + "&minlatitude=" + CARIBE.minlat + "&maxlatitude=" + CARIBE.maxlat
+        + "&minlongitude=" + CARIBE.minlon + "&maxlongitude=" + CARIBE.maxlon
+        + "&minmagnitude=" + MC + "&starttime=" + iniCaribe + "&orderby=time";
+
+      const resps = await Promise.all([fetch(url), fetch(urlCaribe)]);
+      if(!resps[0].ok) throw new Error("HTTP " + resps[0].status);
+      const data = await resps[0].json();
+      const dataCaribe = resps[1].ok ? await resps[1].json() : { features: [] };
       setProgressStep(2);
 
-      const events = data.features.map(function(f){
+      const aEvento = function(f){
         return {
           id: f.id,
           mag: f.properties.mag,
@@ -1339,7 +1361,10 @@
           lon: f.geometry.coordinates[0],
           depth: f.geometry.coordinates[2]
         };
-      }).filter(function(e){ return e.mag != null; });
+      };
+      const events = data.features.map(aEvento).filter(function(e){ return e.mag != null; });
+      zonaEvents = events;
+      caribeEvents = dataCaribe.features.map(aEvento).filter(function(e){ return e.mag != null; });
 
       lastEvents = events;
       setProgressStep(3);
@@ -1350,7 +1375,7 @@
       const retro = retrospectiveValidation(events);
       renderRetro(retro);
 
-      renderMapAndList(events);
+      renderAlcance();
 
       lastUpdateTs = Date.now();
       document.getElementById("update-line").textContent = minutesAgoLabel(lastUpdateTs);
@@ -1427,7 +1452,7 @@
     const card = document.getElementById("estado-card");
     const ult24 = events.filter(function(e){ return Date.now()-e.time < 24*3600*1000; });
     const maxMag = ult24.reduce(function(m,e){ return Math.max(m, e.mag); }, 0);
-    document.getElementById("estado-zona").textContent = RADIUS_KM + " km de " + SD.name;
+    document.getElementById("estado-zona").textContent = ALCANCE === "caribe" ? "Caribe" : RADIUS_KM + " km de " + SD.name;
     let clase, icono, titulo, detalle;
     if(ult24.length === 0){
       clase="estado-normal"; icono=""; titulo="Sin sismos en las últimas 24 horas";
@@ -1472,6 +1497,23 @@
       (ultimo.url ? '<a href="' + ultimo.url + '" target="_blank" rel="noopener">Ver ficha ›</a>' : '') + '</div>';
   }
 
+  function renderAlcance(){
+    document.getElementById("alc-zona-btn").textContent = "Cerca de " + SD.name.replace(" de los Caballeros","");
+    renderMapAndList(ALCANCE === "caribe" ? caribeEvents : zonaEvents);
+  }
+  function encuadrarMapa(){
+    if(ALCANCE === "caribe") map.fitBounds([[CARIBE.minlat, CARIBE.minlon],[CARIBE.maxlat, CARIBE.maxlon]], { padding:[10,10] });
+    else map.fitBounds(centerCircle.getBounds(), { padding:[10,10] });
+  }
+  document.querySelectorAll(".alc-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      ALCANCE = b.dataset.alcance;
+      document.querySelectorAll(".alc-btn").forEach(function(x){ x.classList.toggle("active", x === b); });
+      renderAlcance();
+      encuadrarMapa();
+    });
+  });
+
   function renderMapAndList(events){
     clearMarkers();
     const contenedor = document.getElementById("lista-sismos");
@@ -1499,7 +1541,9 @@
       todayBadge.style.display = "none";
     }
     document.getElementById("map-summary").textContent =
-      "Se encontraron " + events.length + " sismos de magnitud " + MC + " o mayor dentro de " + RADIUS_KM + " km de " + SD.name + ", en los últimos " + HISTORY_YEARS + " años.";
+      (ALCANCE === "caribe"
+        ? events.length + " sismos de magnitud " + MC + " o mayor en el Caribe en los últimos " + CARIBE.dias + " días."
+        : "Se encontraron " + events.length + " sismos de magnitud " + MC + " o mayor dentro de " + RADIUS_KM + " km de " + SD.name + ", en los últimos " + HISTORY_YEARS + " años.");
 
     if(recientes.length === 0){
       listaTop.innerHTML = '<div class="loading">No hay sismos registrados recientemente en esta área.</div>';
@@ -1531,7 +1575,8 @@
         '<div class="mag-badge ' + magNivel(sismo.mag) + '">' + sismo.mag.toFixed(1) + '</div>' +
         '<div class="sismo-info">' +
           '<div class="sismo-lugar">' + translatePlace(sismo.place).replace(/,\s*República Dominicana$/, "") + '</div>' +
-          '<div class="sismo-meta">' + cuandoCorto(sismo.time) + ' · ' + (sismo.depth!=null ? Math.round(sismo.depth)+' km prof.' : 'prof. N/D') + '</div>' +
+          '<div class="sismo-meta">' + cuandoCorto(sismo.time) + ' · ' + (sismo.depth!=null ? Math.round(sismo.depth)+' km prof.' : 'prof. N/D') +
+            (ALCANCE === "caribe" ? ' · ' + Math.round(distanciaKm(SD.lat, SD.lon, sismo.lat, sismo.lon)) + ' km de ' + SD.name.replace(" de los Caballeros","") : '') + '</div>' +
         '</div>' +
         '<svg class="chev" viewBox="0 0 8 14" width="8" height="14"><path d="M1 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       item.addEventListener("click", function(){
