@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SismoProb RD - Monitoreo Sísmico, Clima y Ciclones</title>
+<title>SismoPro RD - Monitoreo sísmico y alertas del Caribe</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#111827">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -371,6 +371,27 @@
   .season-badge.active { background: rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
   .season-badge.off { background: rgba(100,116,139,0.15); color:#94a3b8; border:1px solid rgba(100,116,139,0.3); }
   .mapa-oscuro { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6); }
+  .estado-card { display:flex; gap:16px; align-items:center; border-radius:20px; padding:20px 22px; margin-bottom:20px; border:1px solid #1f2937; background:#0f172a; }
+  .estado-icono { font-size:30px; line-height:1; }
+  .estado-label { font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:.5px; }
+  .estado-titulo { font-size:22px; font-weight:800; color:#f1f5f9; margin-top:4px; }
+  .estado-detalle { font-size:13px; color:#cbd5e1; margin-top:4px; line-height:1.45; }
+  .estado-normal { background:linear-gradient(145deg, rgba(16,185,129,.14), rgba(16,185,129,.04)); border-color:rgba(16,185,129,.35); }
+  .estado-moderado { background:linear-gradient(145deg, rgba(245,158,11,.16), rgba(245,158,11,.04)); border-color:rgba(245,158,11,.4); }
+  .estado-alto { background:linear-gradient(145deg, rgba(239,68,68,.18), rgba(239,68,68,.05)); border-color:rgba(239,68,68,.45); }
+  .ultimo-grid { display:flex; gap:18px; align-items:center; }
+  .ultimo-mag { font-size:40px; font-weight:800; line-height:1; color:#fbbf24; min-width:96px; text-align:center; }
+  .ultimo-mag.fuerte { color:#f87171; }
+  .ultimo-mag small { display:block; font-size:10px; font-weight:700; color:#64748b; letter-spacing:.5px; margin-top:6px; }
+  .ultimo-lugar { font-size:16px; font-weight:700; color:#f1f5f9; }
+  .ultimo-datos { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px 16px; margin-top:10px; font-size:12px; color:#94a3b8; }
+  .ultimo-datos b { color:#e2e8f0; font-weight:600; }
+  .ultimo-fuente { margin-top:12px; font-size:11px; color:#64748b; }
+  .ultimo-fuente a { color:#60a5fa; }
+  .ver-mas { display:flex; justify-content:space-between; align-items:center; margin-top:14px; padding:10px 14px; border-radius:12px; background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2); font-size:12px; font-weight:600; color:#93c5fd; }
+  .ver-mas:hover { background:rgba(59,130,246,.14); }
+  .lab-body { margin-top:16px; }
+  @media (max-width:600px){ .ultimo-grid{ flex-direction:column; align-items:flex-start; } .ultimo-mag{ text-align:left; min-width:0; } .estado-titulo{ font-size:19px; } }
 </style>
 </head>
 <body>
@@ -379,8 +400,8 @@
   <!-- Encabezado -->
   <div class="header">
     <div>
-      <h1 class="brand">SismoProb <span>RD</span></h1>
-      <p class="tagline">Monitoreo sísmico, clima y ciclones · República Dominicana</p>
+      <h1 class="brand">SismoPro <span>RD</span></h1>
+      <p class="tagline">Monitoreo sísmico y alertas para República Dominicana y el Caribe</p>
     </div>
     <div class="badge-live" id="status-badge">
       <span class="dot"></span> <span id="status-text">Conectando…</span>
@@ -397,10 +418,6 @@
   <!-- ============ TAB: SISMOS ============ -->
   <div class="tab-panel active" id="tab-sismos">
 
-    <div class="system-warning-banner">
-      <strong>⚠️ Esta plataforma no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Nadie puede hacerlo hoy en día. Los porcentajes de abajo estiman la posibilidad estadística de que se registre <em>al menos un sismo</em> de cierta magnitud, en algún punto dentro de <span id="ctx-radius-banner">250&nbsp;km de Santo Domingo</span>. Esto no equivale al riesgo de daños ni indica que el sismo vaya a sentirse en la ciudad.
-    </div>
-
     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
       <span class="update-line" id="update-line">Cargando datos…</span>
       <div class="view-toggle">
@@ -413,6 +430,60 @@
     <div class="dashboard-grid">
       <div class="col-main">
 
+        <!-- Estado sísmico -->
+        <div class="estado-card estado-cargando" id="estado-card">
+          <div class="estado-icono" id="estado-icono">⏳</div>
+          <div>
+            <div class="estado-label">Estado sísmico · <span id="estado-zona">250 km de Santo Domingo</span></div>
+            <div class="estado-titulo" id="estado-titulo">Consultando…</div>
+            <div class="estado-detalle" id="estado-detalle">Revisando los sismos de las últimas 24 horas.</div>
+          </div>
+        </div>
+
+        <!-- Último sismo -->
+        <div class="card ultimo-card">
+          <div class="card-header"><span>📍 Último sismo detectado</span><span style="font-size:10px; color:#64748b;" id="ultimo-hace"></span></div>
+          <div id="ultimo-sismo"><div class="loading">Sincronizando con el catálogo sísmico…</div></div>
+        </div>
+
+        <!-- Mapa -->
+        <div class="card">
+          <div class="card-header">
+            <span>🗺️ Mapa sísmico interactivo</span>
+            <span style="font-size: 10px; color: #64748b;" id="radio-label">Radio analizado: 250 km desde Santo Domingo</span>
+          </div>
+          <div id="map"></div>
+          <div class="map-summary" id="map-summary">Cargando eventos…</div>
+        </div>
+
+        <!-- Sismos Recientes -->
+        <div class="card">
+          <div class="card-header" style="margin-bottom:0;">
+            <span>⚡ Sismos recientes — Fuente: USGS/ANSS</span>
+            <span class="today-badge" id="today-badge" style="display:none;"></span>
+          </div>
+          <details id="sismos-details" class="acordeon">
+            <summary class="sismos-summary ver-mas">
+              <span id="total-badge">Cargando…</span>
+              <span class="accordion-chevron">▾</span>
+            </summary>
+            <div id="lista-sismos">
+              <div class="loading">Sincronizando con el catálogo sísmico…</div>
+            </div>
+          </details>
+        </div>
+
+        <!-- Laboratorio -->
+        <div class="card lab-card">
+          <details id="lab-details" class="acordeon">
+            <summary class="card-header sismos-summary" style="margin-bottom:0;">
+              <span>🧪 Laboratorio SismoPro · Análisis experimental</span>
+              <span class="accordion-chevron">▾</span>
+            </summary>
+            <div class="lab-body">
+            <div class="system-warning-banner">
+      <strong>⚠️ Esta plataforma no predice</strong> la fecha, hora ni el lugar exacto de un terremoto. Nadie puede hacerlo hoy en día. Los porcentajes de esta sección estiman la posibilidad estadística de que se registre <em>al menos un sismo</em> de cierta magnitud, en algún punto dentro de <span id="ctx-radius-banner">250&nbsp;km de Santo Domingo</span>. Esto no equivale al riesgo de daños ni indica que el sismo vaya a sentirse en la ciudad.
+    </div>
         <!-- Pronósticos -->
         <div class="forecast-grid">
           <div class="forecast-card" id="card-24h">
@@ -460,29 +531,6 @@
           <strong>¿Qué significa esto para mí?</strong> Estos porcentajes describen actividad sísmica de fondo en una zona amplia (<span id="ctx-radius-meaning">250 km alrededor de Santo Domingo</span>), no el riesgo de daños en tu vivienda. Mantén las medidas normales de preparación ante sismos y, si sientes un temblor, sigue las indicaciones de la Defensa Civil y el COE — esta plataforma es informativa y no sustituye los comunicados oficiales.
         </div>
 
-        <!-- Mapa -->
-        <div class="card">
-          <div class="card-header">
-            <span>🗺️ Mapa sísmico interactivo</span>
-            <span style="font-size: 10px; color: #64748b;" id="radio-label">Radio analizado: 250 km desde Santo Domingo</span>
-          </div>
-          <div id="map"></div>
-          <div class="map-summary" id="map-summary">Cargando eventos…</div>
-        </div>
-
-        <!-- Sismos Recientes -->
-        <div class="card">
-          <details id="sismos-details">
-            <summary class="card-header sismos-summary">
-              <span>⚡ Sismos recientes — Fuente: USGS/ANSS</span>
-              <span style="display:flex; align-items:center; gap:8px;">
-                <span class="today-badge" id="today-badge" style="display:none;"></span>
-                <span style="font-size: 10px; color: #64748b;" id="total-badge">Cargando...</span>
-                <span class="accordion-chevron">▾</span>
-              </span>
-            </summary>
-            <div id="lista-sismos">
-              <div class="loading">Sincronizando con el catálogo sísmico…</div>
             </div>
           </details>
         </div>
@@ -554,7 +602,7 @@
           <div class="card-header">📚 Fuentes y responsabilidad</div>
           <div class="sources-box">
             <p><b>Datos sísmicos:</b> USGS/ANSS ComCat. No implica respaldo ni validación del USGS al modelo probabilístico.</p>
-            <p><b>Modelo probabilístico:</b> desarrollado por SismoProb RD (Bayes–Poisson + Gutenberg–Richter).</p>
+            <p><b>Modelo probabilístico:</b> desarrollado por SismoPro RD (Bayes–Poisson + Gutenberg–Richter).</p>
             <p><b>Fuente nacional recomendada para contraste:</b> <a href="https://sismologico.uasd.edu.do/" target="_blank" rel="noopener">Centro Nacional de Sismología, UASD</a>.</p>
             <p><b>Uso:</b> informativo y educativo. No reemplaza los comunicados de la Defensa Civil ni del COE.</p>
           </div>
@@ -1054,7 +1102,7 @@
     }catch(err){
       console.error("Error cargando sismos:", err);
       setStatus("err","Conexión interrumpida");
-      document.getElementById("lista-sismos").innerHTML =
+      document.getElementById("ultimo-sismo").innerHTML =
         '<div class="loading" style="color:#f87171;">⚠️ No se pudo conectar con el catálogo sísmico (USGS). Los datos mostrados pueden estar desactualizados. Reintentando automáticamente…</div>';
     }finally{
       setCardLoading(false);
@@ -1093,6 +1141,71 @@
       (better ? "Mejor" : "Similar/menor") + " que el modelo base (" + retro.baseBrier.toFixed(3) + "), n=" + retro.n + " meses";
   }
 
+  /* ============================================================
+     ESTADO SÍSMICO + ÚLTIMO SISMO
+  ============================================================ */
+  function distanciaKm(lat1, lon1, lat2, lon2){
+    const R = 6371, rad = Math.PI/180;
+    const dLat = (lat2-lat1)*rad, dLon = (lon2-lon1)*rad;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
+  function haceCuanto(ms){
+    const min = Math.round((Date.now()-ms)/60000);
+    if(min < 1) return "hace instantes";
+    if(min < 60) return "hace " + min + " min";
+    const h = Math.round(min/60);
+    if(h < 48) return "hace " + h + (h===1 ? " hora" : " horas");
+    return "hace " + Math.round(h/24) + " días";
+  }
+  function renderEstadoYUltimo(events, ultimo){
+    const card = document.getElementById("estado-card");
+    const ult24 = events.filter(function(e){ return Date.now()-e.time < 24*3600*1000; });
+    const maxMag = ult24.reduce(function(m,e){ return Math.max(m, e.mag); }, 0);
+    document.getElementById("estado-zona").textContent = RADIUS_KM + " km de " + SD.name;
+    let clase, icono, titulo, detalle;
+    if(ult24.length === 0){
+      clase="estado-normal"; icono="✅"; titulo="Sin sismos en las últimas 24 horas";
+      detalle="No se han registrado sismos de magnitud " + MC.toFixed(1) + " o mayor en la zona.";
+    } else if(maxMag < 4){
+      clase="estado-normal"; icono="✅"; titulo="Actividad habitual";
+      detalle=ult24.length + (ult24.length===1 ? " sismo menor" : " sismos menores") + " en las últimas 24 horas (máximo M " + maxMag.toFixed(1) + "). Normalmente no se sienten o se sienten muy leve.";
+    } else if(maxMag < 5){
+      clase="estado-moderado"; icono="⚠️"; titulo="Actividad moderada";
+      detalle="Se registró un sismo de M " + maxMag.toFixed(1) + " en las últimas 24 horas. Pudo sentirse cerca del epicentro; no suele causar daños.";
+    } else {
+      clase="estado-alto"; icono="🔴"; titulo="Sismo fuerte reciente";
+      detalle="Se registró un sismo de M " + maxMag.toFixed(1) + " en las últimas 24 horas. Sigue las indicaciones de la Defensa Civil y el COE.";
+    }
+    card.className = "estado-card " + clase;
+    document.getElementById("estado-icono").textContent = icono;
+    document.getElementById("estado-titulo").textContent = titulo;
+    document.getElementById("estado-detalle").textContent = detalle;
+
+    const cont = document.getElementById("ultimo-sismo");
+    if(!ultimo){
+      cont.innerHTML = '<div class="loading">No hay sismos registrados en esta área.</div>';
+      document.getElementById("ultimo-hace").textContent = "";
+      return;
+    }
+    document.getElementById("ultimo-hace").textContent = haceCuanto(ultimo.time);
+    const dist = Math.round(distanciaKm(SD.lat, SD.lon, ultimo.lat, ultimo.lon));
+    cont.innerHTML =
+      '<div class="ultimo-grid">' +
+        '<div class="ultimo-mag' + (ultimo.mag >= 4 ? ' fuerte' : '') + '">' + ultimo.mag.toFixed(1) + '<small>MAGNITUD</small></div>' +
+        '<div>' +
+          '<div class="ultimo-lugar">' + translatePlace(ultimo.place) + '</div>' +
+          '<div class="ultimo-datos">' +
+            '<span>🕒 <b>' + toRDTime(ultimo.time) + '</b></span>' +
+            '<span>⬇️ Profundidad: <b>' + (ultimo.depth!=null ? Math.round(ultimo.depth) + ' km' : 'N/D') + '</b></span>' +
+            '<span>📏 A <b>' + dist + ' km</b> de ' + SD.name + '</span>' +
+            '<span>✔️ ' + statusLabel(ultimo.status) + '</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ultimo-fuente">Fuente: USGS/ANSS' + (ultimo.url ? ' · <a href="' + ultimo.url + '" target="_blank" rel="noopener">Ver ficha del evento</a>' : '') + '</div>';
+  }
+
   function renderMapAndList(events){
     clearMarkers();
     const contenedor = document.getElementById("lista-sismos");
@@ -1100,7 +1213,10 @@
     contenedor.innerHTML = "";
 
     const recientes = events.slice().sort(function(a,b){return b.time-a.time;}).slice(0,25);
-    totalBadge.textContent = events.length + " eventos en " + HISTORY_YEARS + " años · mostrando los " + recientes.length + " más recientes";
+    totalBadge.textContent = recientes.length > 1
+      ? "Ver los " + (recientes.length - 1) + " sismos anteriores"
+      : "No hay sismos anteriores en esta área";
+    renderEstadoYUltimo(events, recientes[0]);
 
     const hoyRD = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santo_Domingo" }).format(new Date());
     const sismosHoy = events.filter(function(e){
@@ -1110,7 +1226,6 @@
     if(sismosHoy.length > 0){
       todayBadge.textContent = "🔴 " + sismosHoy.length + " hoy";
       todayBadge.style.display = "inline-flex";
-      document.getElementById("sismos-details").open = true;
     } else {
       todayBadge.style.display = "none";
     }
@@ -1122,7 +1237,7 @@
       return;
     }
 
-    recientes.forEach(function(sismo){
+    recientes.forEach(function(sismo, idx){
       const esFuerte = sismo.mag >= 4.0;
       const claseMag = esFuerte ? "mag-pill" : "mag-pill moderate";
       const color = esFuerte ? "#ef4444" : "#fbbf24";
@@ -1138,6 +1253,7 @@
         statusLabel(sismo.status)
       );
       markers.push(marker);
+      if(idx === 0) return; // el más reciente ya se muestra en "Último sismo detectado"
 
       const item = document.createElement("div");
       item.className = "sismo-item";
