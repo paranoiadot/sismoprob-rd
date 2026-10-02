@@ -370,6 +370,7 @@
   .season-badge { font-size:11px; padding:6px 12px; border-radius:20px; font-weight:700; }
   .season-badge.active { background: rgba(245,158,11,0.15); color:#fbbf24; border:1px solid rgba(245,158,11,0.3); }
   .season-badge.off { background: rgba(100,116,139,0.15); color:#94a3b8; border:1px solid rgba(100,116,139,0.3); }
+  .mapa-oscuro { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9) saturate(0.6); }
 </style>
 </head>
 <body>
@@ -911,8 +912,11 @@
      MAPA
   ============================================================ */
   const map = L.map("map").setView([SD.lat, SD.lon], 6);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 18, attribution: "&copy; OpenStreetMap & CARTO"
+  // Teselas de OpenStreetMap (sin API key). Se oscurecen con CSS (.mapa-oscuro)
+  // para mantener el estilo dark; CARTO empezó a exigir API key.
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, className: "mapa-oscuro",
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
   }).addTo(map);
 
   let centerCircle = L.circle([SD.lat, SD.lon], {
