@@ -692,6 +692,76 @@
   .alcance{ display:grid; grid-template-columns:1fr 1fr; padding:3px; gap:2px; background:rgba(120,140,190,.16); border-radius:11px; }
   .alc-btn{ border:0; background:transparent; color:var(--t1); font:600 13px var(--font); padding:8px 6px; border-radius:9px; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .alc-btn.active{ background:rgba(10,132,255,.55); box-shadow:0 3px 8px rgba(0,0,0,.25); }
+  /* ---------- Clima 3.0 · estilo Apple Weather ---------- */
+  .weather-hero{ position:relative; overflow:hidden; transition:background .8s ease; isolation:isolate; }
+  .weather-hero > *{ position:relative; z-index:1; }
+  .weather-hero .hero-fx{ position:absolute; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .weather-hero.sky-clear-day{ background:linear-gradient(175deg,#3b8cf0 0%,#2462c9 45%,#123a86 100%); }
+  .weather-hero.sky-partly-day{ background:linear-gradient(175deg,#4f86c9 0%,#2f5aa0 50%,#173468 100%); }
+  .weather-hero.sky-cloudy-day{ background:linear-gradient(175deg,#61758f 0%,#3f5170 50%,#1f2c47 100%); }
+  .weather-hero.sky-rain{ background:linear-gradient(175deg,#4a5a73 0%,#2c3a55 50%,#141e35 100%); }
+  .weather-hero.sky-storm{ background:linear-gradient(175deg,#3a3a5c 0%,#22223f 50%,#0e0e22 100%); }
+  .weather-hero.sky-clear-night{ background:linear-gradient(175deg,#1b2552 0%,#0f1738 50%,#060b1f 100%); }
+  .weather-hero.sky-cloudy-night{ background:linear-gradient(175deg,#2a3150 0%,#181d36 50%,#0a0d1f 100%); }
+  .fx-sun{ position:absolute; top:-90px; right:-70px; width:260px; height:260px; border-radius:50%; background:radial-gradient(circle,rgba(255,224,130,.55) 0%,rgba(255,200,80,.18) 40%,transparent 70%); animation:fxPulse 6s ease-in-out infinite; }
+  .fx-cloud{ position:absolute; height:60px; border-radius:60px; background:rgba(255,255,255,.13); filter:blur(6px); animation:fxDrift linear infinite; }
+  .fx-cloud::before{ content:""; position:absolute; left:22%; top:-28px; width:46%; height:64px; border-radius:50%; background:inherit; }
+  .fx-drop{ position:absolute; top:-20px; width:1.5px; height:16px; background:linear-gradient(transparent,rgba(180,215,255,.7)); animation:fxRain linear infinite; }
+  .fx-star{ position:absolute; width:2px; height:2px; border-radius:50%; background:#fff; animation:fxTwinkle 3s ease-in-out infinite; }
+  .fx-flash{ position:absolute; inset:0; background:rgba(200,210,255,.0); animation:fxFlash 7s infinite; }
+  @keyframes fxPulse{ 50%{ transform:scale(1.08); opacity:.85; } }
+  @keyframes fxDrift{ from{ transform:translateX(-40%); } to{ transform:translateX(140vw); } }
+  @keyframes fxRain{ to{ transform:translateY(520px); } }
+  @keyframes fxTwinkle{ 50%{ opacity:.2; } }
+  @keyframes fxFlash{ 0%,93%,100%{ background:rgba(200,210,255,0); } 94%{ background:rgba(200,210,255,.35); } 95%{ background:rgba(200,210,255,0); } 96.5%{ background:rgba(200,210,255,.22); } }
+  @media (prefers-reduced-motion:reduce){ .weather-hero .hero-fx *{ animation:none !important; } }
+  .hero-resumen{ margin-top:18px; padding-top:12px; border-top:.5px solid rgba(255,255,255,.22); font-size:14px; line-height:1.45; color:rgba(255,255,255,.92); }
+  .hero-resumen + .hourly-strip{ border-top:0; margin-top:4px; }
+  .chart-card{ padding:14px 0 10px; margin-bottom:14px; }
+  .chart-card .card-header{ padding:0 18px; }
+  .chart-scroll{ overflow-x:auto; scrollbar-width:none; padding:0 8px; }
+  .chart-scroll::-webkit-scrollbar{ display:none; }
+  .chart-scroll svg{ display:block; }
+  .chart-legend{ display:flex; gap:14px; padding:6px 18px 0; font-size:11px; color:var(--t2); }
+  .chart-legend i{ display:inline-block; width:10px; height:3px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+  .dia-row{ cursor:default; }
+  .dia-barra .now-dot{ position:absolute; top:50%; width:9px; height:9px; margin:-4.5px 0 0 -4.5px; border-radius:50%; background:#fff; border:2px solid rgba(4,11,28,.9); box-sizing:border-box; }
+  .mapa-tiempo-card{ padding:14px 0 0; margin-top:14px; overflow:hidden; }
+  .mapa-tiempo-card .card-header{ padding:0 18px; flex-wrap:wrap; gap:8px; }
+  .chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .chip{ border:0; background:rgba(120,140,190,.18); color:var(--t1); font:600 12px var(--font); padding:7px 11px; border-radius:20px; cursor:pointer; display:inline-flex; align-items:center; gap:5px; }
+  .chip.active{ background:var(--blue); color:#fff; }
+  .windy-frame{ display:block; width:100%; height:440px; border:0; margin-top:12px; background:#0b1630; }
+  @media (max-width:600px){ .windy-frame{ height:380px; } }
+  /* ---------- Ciclones 3.0 · mapas en vivo ---------- */
+  .live-card{ padding:14px 0 0; overflow:hidden; }
+  .live-card .card-header{ padding:0 18px; flex-wrap:wrap; gap:8px; }
+  .live-wrap{ position:relative; margin-top:12px; }
+  #sat-map{ height:520px; background:#020713; }
+  @media (max-width:600px){ #sat-map{ height:420px; } }
+  .live-overlay{ position:absolute; left:12px; bottom:12px; z-index:500; display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:14px; background:rgba(4,11,28,.72); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); font-size:12px; }
+  .live-overlay button{ border:0; width:30px; height:30px; border-radius:50%; background:var(--blue); color:#fff; cursor:pointer; display:grid; place-items:center; }
+  .live-overlay .live-dot{ width:8px; height:8px; border-radius:50%; background:var(--red); box-shadow:0 0 0 0 rgba(255,69,58,.6); animation:liveDot 1.6s infinite; }
+  @keyframes liveDot{ 70%{ box-shadow:0 0 0 8px rgba(255,69,58,0); } }
+  .live-progress{ width:90px; height:4px; border-radius:4px; background:rgba(255,255,255,.18); overflow:hidden; }
+  .live-progress i{ display:block; height:100%; width:0; background:#fff; transition:width .3s; }
+  .live-note{ font-size:11px; color:var(--t2); padding:8px 18px 12px; line-height:1.5; }
+  .storm-icon{ position:relative; }
+  .storm-icon svg{ animation:stormSpin 2.4s linear infinite; filter:drop-shadow(0 0 6px rgba(0,0,0,.6)); }
+  .storm-icon b{ position:absolute; left:50%; top:100%; transform:translateX(-50%); white-space:nowrap; font:700 11px var(--font); color:#fff; text-shadow:0 1px 3px #000; margin-top:2px; }
+  @keyframes stormSpin{ to{ transform:rotate(-360deg); } }
+  .tormentas-list{ display:grid; gap:12px; }
+  .tormenta{ display:grid; grid-template-columns:56px 1fr; gap:12px; align-items:center; padding:12px 0; border-top:.5px solid var(--sep); }
+  .tormenta:first-child{ border-top:0; }
+  .tormenta .t-badge{ width:52px; height:52px; border-radius:50%; display:grid; place-items:center; font:700 18px var(--font); color:#fff; }
+  .tormenta .t-nombre{ font-weight:600; font-size:16px; }
+  .tormenta .t-sub{ color:var(--t2); font-size:13px; margin-top:2px; }
+  .tormenta details{ grid-column:1/-1; }
+  .tormenta summary{ cursor:pointer; color:var(--blue); font-size:13px; font-weight:600; }
+  .tormenta img{ width:100%; border-radius:var(--r-md); margin-top:8px; }
+  .sin-tormentas{ display:flex; gap:12px; align-items:center; color:var(--t1); font-size:14px; padding:4px 0; }
+  .sin-tormentas span{ width:36px; height:36px; border-radius:50%; background:rgba(48,209,88,.16); color:var(--green); display:grid; place-items:center; flex:0 0 36px; }
+  .ciclon-imgs figure{ background:rgba(255,255,255,.04); border:.5px solid var(--sep); }
 </style>
 </head>
 <body>
@@ -891,13 +961,21 @@
     </div>
 
     <div class="weather-hero" id="weather-hero">
+      <div class="hero-fx" id="hero-fx" aria-hidden="true"></div>
       <div class="hero-top">
         <div class="hero-city" id="hero-city">Cargando…</div>
         <div class="hero-temp" id="hero-temp">--°</div>
         <div class="hero-desc" id="hero-desc">&nbsp;</div>
         <div class="hero-minmax" id="hero-minmax">&nbsp;</div>
       </div>
+      <div class="hero-resumen" id="hero-resumen">&nbsp;</div>
       <div class="hourly-strip" id="hourly-strip"></div>
+    </div>
+
+    <div class="glass chart-card">
+      <div class="card-header"><span>Temperatura y lluvia · próximas 24 horas</span></div>
+      <div class="chart-scroll" id="chart-scroll"></div>
+      <div class="chart-legend"><span><i style="background:linear-gradient(90deg,#30D158,#FFD60A,#FF9F0A)"></i>Temperatura</span><span><i style="background:#0A84FF"></i>Probabilidad de lluvia</span></div>
     </div>
 
     <div class="clima-cols">
@@ -937,7 +1015,30 @@
         <div class="widget-sub" id="w-uv-sub">&nbsp;</div>
         <div class="uv-scale" id="w-uv-scale"><span class="l1"></span><span class="l1"></span><span class="l2"></span><span class="l2"></span><span class="l3"></span><span class="l3"></span><span class="l4"></span><span class="l4"></span><span class="l5"></span><span class="l5"></span></div>
       </div>
+      <div class="widget-card">
+        <div class="widget-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 13l3-3M12 5V3"/></svg> Presión</div>
+        <div class="widget-value" id="w-pressure">--</div>
+        <div class="widget-sub" id="w-pressure-sub">hPa</div>
+      </div>
+      <div class="widget-card">
+        <div class="widget-title"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg> Visibilidad</div>
+        <div class="widget-value" id="w-vis">--</div>
+        <div class="widget-sub" id="w-vis-sub">&nbsp;</div>
+      </div>
     </div>
+    </div>
+
+    <div class="glass mapa-tiempo-card">
+      <div class="card-header">
+        <span>Mapa del tiempo en vivo</span>
+        <div class="chips" id="clima-capas">
+          <button class="chip active" data-capa="rain">Lluvia</button>
+          <button class="chip" data-capa="temp">Temperatura</button>
+          <button class="chip" data-capa="wind">Viento</button>
+          <button class="chip" data-capa="clouds">Nubes</button>
+        </div>
+      </div>
+      <iframe class="windy-frame" id="clima-windy" title="Mapa del tiempo en vivo (Windy)" loading="lazy" allowfullscreen></iframe>
     </div>
 
     <p class="foot-note">Datos de Open-Meteo (modelos GFS, ECMWF y otros) · <span id="clima-update">Cargando…</span> · se actualiza cada 10 minutos.</p>
@@ -945,39 +1046,59 @@
 
   <!-- ============ TAB: CICLONES ============ -->
   <div class="tab-panel" id="tab-ciclones">
-    <div class="info-banner">
-      <strong>Seguimiento de ciclones tropicales.</strong> La temporada oficial de huracanes en el Atlántico va del 1 de junio al 30 de noviembre. Estos gráficos son publicados directamente por el Centro Nacional de Huracanes (NHC/NOAA) de EE. UU., la autoridad oficial para el Atlántico.
-    </div>
-    <div class="card">
-      <div class="card-header"><span>Estado actual</span></div>
-      <div class="ciclon-status">
-        <span class="season-badge" id="season-badge">Comprobando temporada…</span>
-        <span class="update-line" id="ciclon-update"></span>
+    <div class="glass live-card">
+      <div class="card-header">
+        <span>Caribe en vivo</span>
+        <div class="chips" id="ciclon-capas">
+          <button class="chip active" data-capa="sat">Satélite</button>
+          <button class="chip" data-capa="ir">Infrarrojo</button>
+          <button class="chip" data-capa="wind">Viento</button>
+          <button class="chip" data-capa="temp">Temperatura</button>
+          <button class="chip" data-capa="rain">Lluvia</button>
+          <button class="chip" data-capa="waves">Oleaje</button>
+        </div>
       </div>
+      <div class="live-wrap" id="live-sat">
+        <div id="sat-map"></div>
+        <div class="live-overlay">
+          <button id="sat-play" aria-label="Pausar animación"><svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg></button>
+          <span class="live-dot"></span>
+          <span id="sat-time">Cargando imágenes…</span>
+          <span class="live-progress"><i id="sat-progress"></i></span>
+        </div>
+      </div>
+      <iframe class="windy-frame" id="ciclon-windy" title="Viento, temperatura y lluvia en vivo (Windy)" style="display:none;height:520px;margin-top:12px" allowfullscreen></iframe>
+      <p class="live-note" id="live-note">Últimas 2 horas del satélite GOES-East (NOAA, vía NASA GIBS), animadas cada 10 minutos. Los íconos que giran marcan los ciclones activos según el NHC.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>Ciclones activos</span><span class="season-badge" id="season-badge">Comprobando…</span></div>
+      <div class="tormentas-list" id="tormentas-list"><div class="loading">Consultando al Centro Nacional de Huracanes…</div></div>
+      <span class="update-line" id="ciclon-update" style="display:block;margin-top:10px"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span>Zonas de posible formación (NHC)</span></div>
       <div class="ciclon-imgs">
         <figure>
           <img id="img-2d" alt="Pronóstico tropical de 2 días para el Atlántico (NHC)" onerror="this.parentElement.innerHTML='&lt;div class=&quot;img-fallback&quot;&gt;No se pudo cargar el gráfico de 2 días. &lt;a href=&quot;https://www.nhc.noaa.gov/&quot; target=&quot;_blank&quot;&gt;Verlo directo en NHC.gov →&lt;/a&gt;&lt;/div&gt;'">
-          <figcaption>Pronóstico de formación tropical — próximos 2 días (NHC)</figcaption>
+          <figcaption>Próximos 2 días</figcaption>
         </figure>
         <figure>
           <img id="img-7d" alt="Pronóstico tropical de 7 días para el Atlántico (NHC)" onerror="this.parentElement.innerHTML='&lt;div class=&quot;img-fallback&quot;&gt;No se pudo cargar el gráfico de 7 días. &lt;a href=&quot;https://www.nhc.noaa.gov/&quot; target=&quot;_blank&quot;&gt;Verlo directo en NHC.gov →&lt;/a&gt;&lt;/div&gt;'">
-          <figcaption>Pronóstico de formación tropical — próximos 7 días (NHC)</figcaption>
+          <figcaption>Próximos 7 días</figcaption>
         </figure>
       </div>
-      <p style="font-size:11px; color:#64748b; margin-top:16px; line-height:1.6;">
-        El seguimiento detallado de tormentas activas (nombre, categoría, cono de trayectoria) requiere un servidor intermedio porque el NHC no permite consultarlo directamente desde el navegador; está planificado para una próxima versión. Mientras tanto, consulta directamente
-        <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">nhc.noaa.gov</a> o los boletines del <a href="https://www.onamet.gob.do/" target="_blank" rel="noopener">INDOMET/ONAMET</a> y la <a href="https://coe.gob.do/" target="_blank" rel="noopener">Defensa Civil / COE</a>.
-      </p>
     </div>
 
     <div class="card">
       <div class="card-header"><span>Alertas oficiales por provincia (COE)</span></div>
       <div class="sources-box">
-        <p>Las alertas formales por color (verde, amarilla, roja) y su distribución exacta por provincia las emite únicamente el <b>Centro de Operaciones de Emergencias (COE)</b>. No las mostramos dentro de la app porque el COE no publica esa información en un formato que se pueda leer de forma automática y confiable — mostrar un dato mal interpretado en una alerta real sería peligroso. Consulta siempre la fuente oficial:</p>
+        <p>Las alertas por color (verde, amarilla, roja) por provincia las emite únicamente el <b>Centro de Operaciones de Emergencias (COE)</b>. No las reproducimos aquí porque no se publican en un formato que se pueda leer de forma automática y confiable. Consulta siempre la fuente oficial:</p>
         <p>
           <a href="https://coe.gob.do/index.php/alertas/emision-de-alertas" target="_blank" rel="noopener">Boletines de alertas — COE</a><br>
           <a href="https://coe.gob.do/index.php/alertas/mapa" target="_blank" rel="noopener">Mapas de alertas por provincia — COE</a><br>
-          <a href="https://www.onamet.gob.do" target="_blank" rel="noopener">INDOMET/ONAMET</a> — trayectoria, vientos y lluvia técnica
+          <a href="https://www.onamet.gob.do" target="_blank" rel="noopener">INDOMET/ONAMET</a> · <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">NHC/NOAA</a>
         </p>
       </div>
     </div>
@@ -1497,7 +1618,11 @@
       (ultimo.url ? '<a href="' + ultimo.url + '" target="_blank" rel="noopener">Ver ficha ›</a>' : '') + '</div>';
   }
 
+  let mapaPendiente = false;
   function renderAlcance(){
+    // Leaflet falla al dibujar en un mapa oculto: si la pestaña Sismos no está visible, se dibuja al volver
+    if(!document.getElementById("tab-sismos").classList.contains("active")){ mapaPendiente = true; return; }
+    mapaPendiente = false;
     document.getElementById("alc-zona-btn").textContent = "Cerca de " + SD.name.replace(" de los Caballeros","");
     renderMapAndList(ALCANCE === "caribe" ? caribeEvents : zonaEvents);
   }
@@ -1644,7 +1769,7 @@
       document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
       btn.classList.add("active");
       document.getElementById("tab-"+btn.dataset.tab).classList.add("active");
-      if(btn.dataset.tab === "sismos"){ setTimeout(function(){ map.invalidateSize(); }, 50); }
+      if(btn.dataset.tab === "sismos"){ setTimeout(function(){ map.invalidateSize(); if(mapaPendiente) renderAlcance(); }, 50); }
       if(btn.dataset.tab === "clima" && !climaLoaded){ cargarClima(); }
       if(btn.dataset.tab === "ciclones" && !ciclonesLoaded){ cargarCiclones(); }
     });
@@ -1694,14 +1819,18 @@
     climaLoaded = true;
     const grid = document.getElementById("clima-grid");
     try{
-      const results = await Promise.all(CITIES.map(function(c){
-        const url = "https://api.open-meteo.com/v1/forecast?latitude="+c.lat+"&longitude="+c.lon
-          + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,is_day"
-          + "&hourly=temperature_2m,weather_code,precipitation_probability"
-          + "&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max"
-          + "&forecast_days=7&timezone=America%2FSanto_Domingo&wind_speed_unit=kmh";
-        return fetch(url).then(function(r){ return r.json(); }).then(function(d){ return { city:c, data:d }; });
-      }));
+      // Una sola petición para todas las ciudades (evita el límite de peticiones de Open-Meteo)
+      const url = "https://api.open-meteo.com/v1/forecast?latitude="+CITIES.map(function(c){ return c.lat; }).join(",")
+        + "&longitude="+CITIES.map(function(c){ return c.lon; }).join(",")
+        + "&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl,visibility,is_day"
+        + "&hourly=temperature_2m,weather_code,precipitation_probability"
+        + "&daily=precipitation_sum,precipitation_probability_max,temperature_2m_max,temperature_2m_min,weather_code,sunrise,sunset,uv_index_max"
+        + "&forecast_days=10&timezone=America%2FSanto_Domingo&wind_speed_unit=kmh";
+      const resp = await fetch(url);
+      if(!resp.ok) throw new Error("Open-Meteo HTTP " + resp.status);
+      let datos = await resp.json();
+      if(!Array.isArray(datos)) datos = [datos];
+      const results = CITIES.map(function(c, i){ return { city:c, data:datos[i] || {} }; });
       climaCache = results;
       grid.innerHTML = "";
       results.forEach(function(r, idx){
@@ -1840,31 +1969,317 @@
         '<span class="dia-max">'+tmax+'°</span>';
       days.appendChild(el);
     });
+    mejorasClima(r);
+  }
+
+  /* ---------- Clima 3.0: cielo dinámico, curva horaria, 10 días, mapa ---------- */
+  function tempColor(t){
+    const stops = [[18,[90,200,250]],[23,[48,209,88]],[28,[255,214,10]],[31,[255,159,10]],[35,[255,69,58]]];
+    if(t <= stops[0][0]) return "rgb("+stops[0][1].join(",")+")";
+    for(let i=1;i<stops.length;i++){
+      if(t <= stops[i][0]){
+        const a=stops[i-1], b=stops[i], f=(t-a[0])/(b[0]-a[0]);
+        return "rgb("+a[1].map(function(v,k){ return Math.round(v+(b[1][k]-v)*f); }).join(",")+")";
+      }
+    }
+    return "rgb("+stops[stops.length-1][1].join(",")+")";
+  }
+  function tipoCielo(code, isDay){
+    if(code >= 95) return "storm";
+    if((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
+    if(code === 3 || code === 45 || code === 48) return isDay ? "cloudy-day" : "cloudy-night";
+    if(code === 2) return isDay ? "partly-day" : "cloudy-night";
+    return isDay ? "clear-day" : "clear-night";
+  }
+  function pintarCielo(tipo){
+    const hero = document.getElementById("weather-hero"), fx = document.getElementById("hero-fx");
+    hero.className = "weather-hero sky-" + tipo;
+    hero.classList.toggle("is-night", /night/.test(tipo));
+    let h = "";
+    const rnd = function(a,b){ return (a + Math.random()*(b-a)).toFixed(1); };
+    if(tipo === "clear-day" || tipo === "partly-day") h += '<div class="fx-sun"></div>';
+    if(/night/.test(tipo)) for(let i=0;i<40;i++) h += '<i class="fx-star" style="left:'+rnd(0,100)+'%;top:'+rnd(0,60)+'%;animation-delay:'+rnd(0,3)+'s;opacity:'+rnd(.3,.9)+'"></i>';
+    const nubes = { "partly-day":3, "cloudy-day":5, "cloudy-night":4, "rain":5, "storm":5 }[tipo] || 0;
+    for(let i=0;i<nubes;i++) h += '<div class="fx-cloud" style="top:'+rnd(-10,45)+'%;width:'+rnd(140,260)+'px;animation-duration:'+rnd(45,90)+'s;animation-delay:-'+rnd(0,80)+'s"></div>';
+    if(tipo === "rain" || tipo === "storm") for(let i=0;i<70;i++) h += '<i class="fx-drop" style="left:'+rnd(0,100)+'%;animation-duration:'+rnd(.5,.9)+'s;animation-delay:-'+rnd(0,1)+'s"></i>';
+    if(tipo === "storm") h += '<div class="fx-flash"></div>';
+    fx.innerHTML = h;
+  }
+  function horaLegible(d){ return new Intl.DateTimeFormat("es-DO",{ hour:"numeric", hour12:true }).format(d).replace(/\s?([ap])\.?\s?m\.?/i," $1. m."); }
+  function resumenClima(r){
+    const h = r.data.hourly || {}, cur = r.data.current || {};
+    if(!h.time) return "";
+    const now = Date.now();
+    let i0 = h.time.findIndex(function(t){ return new Date(t).getTime() >= now - 3600000; });
+    if(i0 < 0) i0 = 0;
+    let txt = "";
+    let lluvia = -1;
+    for(let i=i0;i<Math.min(i0+12,h.time.length);i++){ if((h.precipitation_probability||[])[i] >= 50){ lluvia = i; break; } }
+    if(lluvia === i0) txt = "Lluvia probable ahora mismo.";
+    else if(lluvia > 0) txt = "Lluvia probable alrededor de las " + horaLegible(new Date(h.time[lluvia])) + ".";
+    else txt = "Sin lluvia importante prevista en las próximas 12 horas.";
+    if(cur.wind_gusts_10m != null) txt += " Ráfagas de hasta " + Math.round(cur.wind_gusts_10m) + " km/h.";
+    const uv = (r.data.daily||{}).uv_index_max;
+    if(uv && uv[0] >= 8) txt += " Índice UV muy alto: protégete del sol.";
+    return txt;
+  }
+  function suavizar(pts){
+    let d = "M" + pts[0][0] + "," + pts[0][1];
+    for(let i=0;i<pts.length-1;i++){
+      const p0 = pts[i-1] || pts[i], p1 = pts[i], p2 = pts[i+1], p3 = pts[i+2] || p2;
+      const c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      const c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += " C" + c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2[0]+","+p2[1].toFixed(1);
+    }
+    return d;
+  }
+  function graficaHoraria(r){
+    const h = r.data.hourly || {}, box = document.getElementById("chart-scroll");
+    if(!h.time){ box.innerHTML = ""; return; }
+    const now = Date.now();
+    let i0 = h.time.findIndex(function(t){ return new Date(t).getTime() >= now - 3600000; });
+    if(i0 < 0) i0 = 0;
+    const idx = []; for(let i=i0;i<Math.min(i0+25,h.time.length);i++) idx.push(i);
+    const temps = idx.map(function(i){ return h.temperature_2m[i]; });
+    const tmin = Math.min.apply(null,temps), tmax = Math.max.apply(null,temps), rg = Math.max(1, tmax - tmin);
+    const STEP = 46, W = STEP*(idx.length-1) + 40, H = 190, top = 34, bot = 112;
+    const pts = idx.map(function(i,k){ return [20 + k*STEP, top + (1 - (h.temperature_2m[i]-tmin)/rg)*(bot-top)]; });
+    let s = '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Temperatura y probabilidad de lluvia por hora">';
+    s += '<defs><linearGradient id="tg" x1="0" y1="0" x2="1" y2="0">';
+    idx.forEach(function(i,k){ s += '<stop offset="'+(k/(idx.length-1)).toFixed(3)+'" stop-color="'+tempColor(h.temperature_2m[i])+'"/>'; });
+    s += '</linearGradient><linearGradient id="ta" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>';
+    const curva = suavizar(pts);
+    s += '<path d="'+curva+' L'+pts[pts.length-1][0]+','+bot+' L'+pts[0][0]+','+bot+' Z" fill="url(#ta)"/>';
+    s += '<path d="'+curva+'" fill="none" stroke="url(#tg)" stroke-width="3" stroke-linecap="round"/>';
+    idx.forEach(function(i,k){
+      const x = pts[k][0], p = (h.precipitation_probability||[])[i] || 0;
+      if(p > 0) s += '<rect x="'+(x-8)+'" y="'+(160 - p*0.34).toFixed(1)+'" width="16" height="'+(p*0.34).toFixed(1)+'" rx="3" fill="#0A84FF" opacity="'+(0.35+p/160).toFixed(2)+'"/>';
+      if(p >= 20) s += '<text x="'+x+'" y="'+(154 - p*0.34).toFixed(1)+'" text-anchor="middle" font-size="10" font-weight="600" fill="#64D2FF">'+p+'%</text>';
+      if(k % 2 === 0){
+        s += '<circle cx="'+x+'" cy="'+pts[k][1].toFixed(1)+'" r="'+(k===0?5:3)+'" fill="'+(k===0?"#fff":tempColor(h.temperature_2m[i]))+'" stroke="#0b1630" stroke-width="1.5"/>';
+        s += '<text x="'+x+'" y="'+(pts[k][1]-11).toFixed(1)+'" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">'+Math.round(h.temperature_2m[i])+'°</text>';
+        s += '<text x="'+x+'" y="182" text-anchor="middle" font-size="11" fill="rgba(235,235,245,.6)">'+(k===0?"Ahora":horaLegible(new Date(h.time[i])).replace(" ",""))+'</text>';
+      }
+    });
+    s += '<line x1="0" x2="'+W+'" y1="160.5" y2="160.5" stroke="rgba(120,140,190,.25)"/></svg>';
+    box.innerHTML = s;
+  }
+  function diezDias(r){
+    const daily = r.data.daily || {}, cur = r.data.current || {}, days = document.getElementById("clima-days");
+    const n = (daily.time||[]).length;
+    document.getElementById("clima-detail-title").textContent = "Pronóstico de " + n + " días";
+    const mins = daily.temperature_2m_min || [], maxs = daily.temperature_2m_max || [];
+    const lo = Math.min.apply(null, mins), hi = Math.max.apply(null, maxs), rg = Math.max(1, hi - lo);
+    days.innerHTML = "";
+    (daily.time||[]).forEach(function(ds, i){
+      const d = new Date(ds+"T12:00:00");
+      const nombre = i === 0 ? "Hoy" : new Intl.DateTimeFormat("es-DO",{ weekday:"short" }).format(d).replace(".","");
+      const izq = (mins[i]-lo)/rg*100, ancho = Math.max(6,(maxs[i]-mins[i])/rg*100);
+      const ll = (daily.precipitation_probability_max||[])[i];
+      let punto = "";
+      if(i === 0 && cur.temperature_2m != null){
+        const pos = Math.max(0, Math.min(100, (cur.temperature_2m - mins[i]) / Math.max(.1, maxs[i]-mins[i]) * 100));
+        punto = '<span class="now-dot" style="left:'+pos.toFixed(1)+'%"></span>';
+      }
+      const el = document.createElement("div");
+      el.className = "dia-row";
+      el.innerHTML = '<span class="dia-nombre">'+nombre+'</span>'
+        + '<span class="dia-ico">'+wmoIcon((daily.weather_code||[])[i] ?? 2, true, 24)+'<em>'+(ll!=null && ll>=20 ? ll+"%" : "")+'</em></span>'
+        + '<span class="dia-min">'+Math.round(mins[i])+'°</span>'
+        + '<span class="dia-barra"><i style="left:'+izq.toFixed(1)+'%;width:'+ancho.toFixed(1)+'%;background:linear-gradient(90deg,'+tempColor(mins[i])+','+tempColor(maxs[i])+')">'+punto+'</i></span>'
+        + '<span class="dia-max">'+Math.round(maxs[i])+'°</span>';
+      days.appendChild(el);
+    });
+  }
+  function windyUrl(lat, lon, zoom, capa){
+    return "https://embed.windy.com/embed2.html?lat="+lat.toFixed(3)+"&lon="+lon.toFixed(3)
+      + "&detailLat="+lat.toFixed(3)+"&detailLon="+lon.toFixed(3)
+      + "&width=650&height=450&zoom="+zoom+"&level=surface&overlay="+capa
+      + "&product=ecmwf&menu=&message=true&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=km%2Fh&metricTemp=%C2%B0C&radarRange=-1";
+  }
+  let climaCapa = "rain", climaCiudadActual = null;
+  function mapaClima(){
+    if(!climaCiudadActual) return;
+    const f = document.getElementById("clima-windy");
+    const url = windyUrl(climaCiudadActual.lat, climaCiudadActual.lon, 7, climaCapa);
+    if(f.getAttribute("src") !== url) f.setAttribute("src", url);
+  }
+  document.querySelectorAll("#clima-capas .chip").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#clima-capas .chip").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active"); climaCapa = b.dataset.capa; mapaClima();
+    });
+  });
+  function mejorasClima(r){
+    const cur = r.data.current || {};
+    pintarCielo(tipoCielo(cur.weather_code, cur.is_day !== 0));
+    document.getElementById("hero-resumen").textContent = resumenClima(r);
+    graficaHoraria(r);
+    diezDias(r);
+    if(cur.wind_gusts_10m != null) document.getElementById("w-wind").textContent = Math.round(cur.wind_speed_10m) + " km/h · ráfagas " + Math.round(cur.wind_gusts_10m);
+    const p = cur.pressure_msl;
+    document.getElementById("w-pressure").textContent = p != null ? Math.round(p) : "--";
+    document.getElementById("w-pressure-sub").textContent = p == null ? "hPa" : "hPa · " + (p < 1005 ? "baja (posible mal tiempo)" : p > 1020 ? "alta (tiempo estable)" : "normal");
+    const v = cur.visibility;
+    document.getElementById("w-vis").textContent = v != null ? (v >= 10000 ? Math.round(v/1000) : (v/1000).toFixed(1)) + " km" : "--";
+    document.getElementById("w-vis-sub").textContent = v == null ? "" : v >= 10000 ? "Despejado, buena visibilidad" : v >= 4000 ? "Algo de bruma" : "Visibilidad reducida";
+    climaCiudadActual = r.city;
+    mapaClima();
   }
 
   setInterval(function(){ if(climaLoaded) cargarClima(); }, 10*60*1000);
 
   /* ============================================================
-     CICLONES
+     CICLONES — satélite GOES animado, Windy y ciclones activos (NHC)
   ============================================================ */
-  let ciclonesLoaded = false;
+  let ciclonesLoaded = false, satMap = null, satFrames = [], satIdx = 0, satTimer = null, satCapa = "sat", stormLayer = null;
+  const SAT_CAPAS = {
+    sat: { layer:"GOES-East_ABI_GeoColor", nivel:7, retraso:50 },
+    ir:  { layer:"GOES-East_ABI_Band13_Clean_Infrared", nivel:6, retraso:40 }
+  };
+  function iniciarSatMapa(){
+    if(satMap) return;
+    satMap = L.map("sat-map", { zoomControl:true, attributionControl:true, minZoom:3, maxZoom:8, worldCopyJump:true }).setView([17.5,-70], 5);
+    L.tileLayer("https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/Coastlines_15m/default/GoogleMapsCompatible_Level13/{z}/{y}/{x}.png", {
+      maxNativeZoom:9, zIndex:50, opacity:.9, attribution:'Imágenes: NOAA GOES-East vía <a href="https://earthdata.nasa.gov/gibs" target="_blank" rel="noopener">NASA GIBS</a>'
+    }).addTo(satMap);
+    stormLayer = L.layerGroup().addTo(satMap);
+    L.circleMarker([SD.lat, SD.lon], { radius:4, color:"#fff", weight:1.5, fillColor:"#0A84FF", fillOpacity:1 }).bindTooltip("Santo Domingo").addTo(satMap);
+  }
+  function cargarFramesSat(){
+    satFrames.forEach(function(f){ satMap.removeLayer(f.layer); });
+    satFrames = [];
+    const cfg = SAT_CAPAS[satCapa];
+    const fin = new Date(Date.now() - cfg.retraso*60000);
+    fin.setUTCMinutes(Math.floor(fin.getUTCMinutes()/10)*10, 0, 0);
+    for(let k=12;k>=0;k--){
+      const t = new Date(fin.getTime() - k*10*60000);
+      const iso = t.toISOString().replace(".000","");
+      const layer = L.tileLayer("https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/"+cfg.layer+"/default/"+iso+"/GoogleMapsCompatible_Level"+cfg.nivel+"/{z}/{y}/{x}.png", {
+        maxNativeZoom:cfg.nivel, opacity:0, zIndex:10, className:"sat-frame"
+      }).addTo(satMap);
+      satFrames.push({ t:t, layer:layer });
+    }
+    satIdx = satFrames.length - 1;
+    mostrarFrame(satIdx);
+    if(!satTimer) reproducirSat(true);
+  }
+  function mostrarFrame(i){
+    satFrames.forEach(function(f, k){ f.layer.setOpacity(k === i ? 1 : 0); });
+    const f = satFrames[i]; if(!f) return;
+    const min = Math.round((Date.now() - f.t.getTime())/60000);
+    document.getElementById("sat-time").textContent = new Intl.DateTimeFormat("es-DO",{ hour:"numeric", minute:"2-digit", hour12:true }).format(f.t) + " · hace " + (min >= 60 ? Math.floor(min/60)+" h "+(min%60)+" min" : min+" min");
+    document.getElementById("sat-progress").style.width = ((i+1)/satFrames.length*100) + "%";
+  }
+  function reproducirSat(on){
+    const btn = document.getElementById("sat-play");
+    clearInterval(satTimer); satTimer = null;
+    if(on){
+      satTimer = setInterval(function(){
+        satIdx = (satIdx + 1) % satFrames.length;
+        mostrarFrame(satIdx);
+      }, 450);
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="2" y="1" width="3" height="10" rx="1"/><rect x="7" y="1" width="3" height="10" rx="1"/></svg>';
+      btn.setAttribute("aria-label","Pausar animación");
+    }else{
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M3 1.5v9l7.5-4.5z"/></svg>';
+      btn.setAttribute("aria-label","Reproducir animación");
+    }
+  }
+  document.getElementById("sat-play").addEventListener("click", function(){ reproducirSat(!satTimer); });
+  function colorCategoria(t){
+    if(t.categoria >= 3) return "#FF453A";
+    if(t.categoria >= 1) return "#FF9F0A";
+    if(t.clase === "TS" || t.clase === "STS") return "#FFD60A";
+    return "#64D2FF";
+  }
+  function iconoTormenta(t){
+    const c = colorCategoria(t), s = t.categoria >= 3 ? 46 : t.categoria >= 1 ? 40 : 32;
+    const svg = '<svg width="'+s+'" height="'+s+'" viewBox="-20 -20 40 40"><circle r="6" fill="none" stroke="'+c+'" stroke-width="3"/>'
+      + '<path d="M0,-6 C8,-8 14,-14 12,-19 M0,6 C-8,8 -14,14 -12,19" fill="none" stroke="'+c+'" stroke-width="3.5" stroke-linecap="round"/></svg>';
+    return L.divIcon({ className:"storm-icon", html:svg + "<b>"+t.nombre+"</b>", iconSize:[s,s], iconAnchor:[s/2,s/2] });
+  }
+  function textoTormenta(t){
+    let sub = t.clase_texto + (t.categoria ? " categoría " + t.categoria : "");
+    if(t.viento_kmh != null) sub += " · vientos " + t.viento_kmh + " km/h";
+    if(t.presion_mb != null) sub += " · " + Math.round(t.presion_mb) + " mb";
+    return sub;
+  }
+  async function cargarTormentas(){
+    const list = document.getElementById("tormentas-list");
+    try{
+      const r = await fetch("/api/v1/ciclones", { cache:"no-store" });
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const datos = await r.json();
+      const ts = datos.tormentas || [];
+      if(stormLayer) stormLayer.clearLayers();
+      if(datos.estado !== "exito" && !ts.length) throw new Error(datos.detalle || "sin datos");
+      if(!ts.length){
+        list.innerHTML = '<div class="sin-tormentas"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span><div>No hay ciclones tropicales activos en este momento según el NHC.</div></div>';
+      }else{
+        list.innerHTML = "";
+        ts.forEach(function(t){
+          const dist = (t.lat!=null && t.lon!=null) ? Math.round(distanciaKm(SD.lat, SD.lon, t.lat, t.lon)) : null;
+          const el = document.createElement("div");
+          el.className = "tormenta";
+          el.innerHTML = '<div class="t-badge" style="background:'+colorCategoria(t)+'">'+(t.categoria || t.clase || "?")+'</div>'
+            + '<div><div class="t-nombre">'+t.nombre+'</div><div class="t-sub">'+textoTormenta(t)+'</div>'
+            + '<div class="t-sub">'+(dist!=null ? "A "+dist.toLocaleString("es-DO")+" km de Santo Domingo" : "")
+            + (t.movimiento_kmh!=null ? " · se mueve a "+t.movimiento_kmh+" km/h" : "")+'</div></div>'
+            + (t.cono_img ? '<details><summary>Ver cono de trayectoria</summary><img loading="lazy" alt="Cono de pronóstico de '+t.nombre+' (NHC)" src="'+t.cono_img+'"></details>' : "");
+          list.appendChild(el);
+          if(stormLayer && t.lat!=null && t.lon!=null){
+            L.marker([t.lat, t.lon], { icon:iconoTormenta(t), zIndexOffset:1000 }).bindPopup("<b>"+t.nombre+"</b><br>"+textoTormenta(t)).addTo(stormLayer);
+          }
+        });
+      }
+      document.getElementById("ciclon-update").textContent = "Fuente: NHC/NOAA · " + minutesAgoLabel(Date.now());
+    }catch(err){
+      console.error("Ciclones:", err);
+      list.innerHTML = '<div class="img-fallback">No se pudo consultar la lista de ciclones activos. <a href="https://www.nhc.noaa.gov/" target="_blank" rel="noopener">Ver en NHC.gov →</a></div>';
+    }
+  }
+  function mostrarCapaCiclon(capa){
+    satCapa = capa;
+    const esSat = capa === "sat" || capa === "ir";
+    document.getElementById("live-sat").style.display = esSat ? "" : "none";
+    const f = document.getElementById("ciclon-windy");
+    f.style.display = esSat ? "none" : "block";
+    document.getElementById("live-note").textContent = esSat
+      ? "Últimas 2 horas del satélite GOES-East (NOAA, vía NASA GIBS), animadas cada 10 minutos." + (capa === "ir" ? " El infrarrojo muestra las nubes también de noche: las más frías (blancas) son las tormentas más fuertes." : "") + " Los íconos que giran marcan los ciclones activos según el NHC."
+      : "Modelo ECMWF animado vía Windy. Mueve la línea de tiempo inferior para ver el pronóstico de los próximos días.";
+    if(esSat){
+      iniciarSatMapa();
+      setTimeout(function(){ satMap.invalidateSize(); }, 50);
+      cargarFramesSat();
+    }else{
+      reproducirSat(false);
+      const url = windyUrl(17.5, -70, 5, capa);
+      if(f.getAttribute("src") !== url) f.setAttribute("src", url);
+    }
+  }
+  document.querySelectorAll("#ciclon-capas .chip").forEach(function(b){
+    b.addEventListener("click", function(){
+      document.querySelectorAll("#ciclon-capas .chip").forEach(function(x){ x.classList.remove("active"); });
+      b.classList.add("active"); mostrarCapaCiclon(b.dataset.capa);
+    });
+  });
   function cargarCiclones(){
+    const primera = !ciclonesLoaded;
     ciclonesLoaded = true;
-    const now = new Date();
-    const month = now.getMonth()+1; // 1-12
+    const month = new Date().getMonth()+1;
     const inSeason = (month >= 6 && month <= 11);
     const badge = document.getElementById("season-badge");
-    badge.textContent = inSeason
-      ? "Temporada de huracanes activa · 1 jun – 30 nov"
-      : "Fuera de temporada oficial · 1 jun – 30 nov";
+    badge.textContent = inSeason ? "Temporada activa" : "Fuera de temporada";
     badge.className = "season-badge " + (inSeason ? "active" : "off");
-
     const ts = Date.now();
     document.getElementById("img-2d").src = "https://www.nhc.noaa.gov/xgtwo/two_atl_2d0.png?t="+ts;
     document.getElementById("img-7d").src = "https://www.nhc.noaa.gov/xgtwo/two_atl_7d0.png?t="+ts;
-    document.getElementById("ciclon-update").textContent = minutesAgoLabel(ts);
+    if(primera) mostrarCapaCiclon(satCapa);
+    else if((satCapa === "sat" || satCapa === "ir") && document.getElementById("tab-ciclones").classList.contains("active")) cargarFramesSat();
+    cargarTormentas();
   }
-  setInterval(function(){ if(ciclonesLoaded) cargarCiclones(); }, 15*60*1000);
+  setInterval(function(){ if(ciclonesLoaded) cargarCiclones(); }, 10*60*1000);
 
   /* ============================================================
      INICIO

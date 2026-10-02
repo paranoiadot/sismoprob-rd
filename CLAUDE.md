@@ -12,6 +12,8 @@ service worker).
     templating).
   - `GET /static/*` → assets estáticos (`static/`, iconos PWA).
   - `GET /api/sismos` → JSON con eventos filtrados + estadísticas del modelo.
+  - `GET /api/v1/ciclones` → ciclones tropicales activos del NHC (`ciclones_nhc.py`),
+    normalizados y en caché 10 min (el NHC no permite CORS, por eso pasa por el servidor).
 - **Lógica de dominio**: `motor_usgs.py` (todo el motor estadístico vive acá,
   sin capa de servicios ni ORM — es un módulo plano de funciones puras).
   - `obtener_sismos_caribe()`: pega al feed público de USGS

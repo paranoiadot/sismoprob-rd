@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from motor_usgs import obtener_sismos_caribe, calcular_probabilidades_bayes_poisson
+from ciclones_nhc import obtener_tormentas_activas
 
 # Inicializamos la aplicación
 app = FastAPI(title="API de SismoProb RD")
@@ -27,3 +28,9 @@ def api_sismos():
         "modelo_matematico": estadisticas,
         "datos": sismos
     }
+
+
+# 4. Tormentas tropicales activas (NHC) — el NHC no permite leerlo desde el navegador
+@app.get("/api/v1/ciclones")
+def api_ciclones():
+    return obtener_tormentas_activas()
